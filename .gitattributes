@@ -61,3 +61,7 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Treat header files (.h) as C++ code
+*.h    diff=cpp
+*.h linguist-language=C++
