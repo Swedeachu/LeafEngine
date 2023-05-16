@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{aea700e0-eafe-4c05-9748-ba384da36a71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\GameScene">
+      <UniqueIdentifier>{d0769e9a-6564-4e64-acbf-53daacd0c6e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game">
+      <UniqueIdentifier>{cb731508-00b0-4f6c-9615-8cbb9134cf84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game\Scenes">
+      <UniqueIdentifier>{511723df-e331-47b6-b017-f6a55f82863c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Graphics">
+      <UniqueIdentifier>{55bb580c-4b40-4a5b-97f2-dec7f665fa8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Math">
+      <UniqueIdentifier>{be40da67-c06e-40ea-af27-89ce8a00e1ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Entity">
+      <UniqueIdentifier>{7065caec-568d-4e62-91b0-e51a28ced171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Entity\Component">
+      <UniqueIdentifier>{1d4aa08a-aead-4ffc-a379-73824461af86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\System">
+      <UniqueIdentifier>{61c6e032-5265-4b01-be6c-62517a820b05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{5d4794ff-ba9c-4b4b-b166-178f2d0f13ce}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\LeafEngine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\stdafx.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\GameScene\GameScene.cpp">
+      <Filter>Source Files\Engine\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Scenes\Sandbox.cpp">
+      <Filter>Source Files\Game\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\Mesh.cpp">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\GameScene\GameSceneSystem.cpp">
+      <Filter>Source Files\Engine\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Entity\Entity.cpp">
+      <Filter>Source Files\Engine\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Entity\Component\Transform.cpp">
+      <Filter>Source Files\Engine\Entity\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Math\Matrix2D.cpp">
+      <Filter>Source Files\Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Math\Vector2D.cpp">
+      <Filter>Source Files\Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\System\GameSystem.cpp">
+      <Filter>Source Files\Engine\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\System\InternalSystem.cpp">
+      <Filter>Source Files\Engine\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\DirectWrapper.cpp">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Game\Scenes\Sandbox.h">
+      <Filter>Source Files\Game\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Entry.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\LeafEngine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\stdafx.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\System\GameSystem.h">
+      <Filter>Source Files\Engine\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\System\InternalSystem.h">
+      <Filter>Source Files\Engine\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Math\Matrix2D.h">
+      <Filter>Source Files\Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Math\Vector2D.h">
+      <Filter>Source Files\Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\DirectWrapper.h">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\Mesh.h">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\GameScene\GameScene.h">
+      <Filter>Source Files\Engine\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\GameScene\GameSceneSystem.h">
+      <Filter>Source Files\Engine\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Entity\Component\Transform.h">
+      <Filter>Source Files\Engine\Entity\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Entity\Entity.h">
+      <Filter>Source Files\Engine\Entity</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Source\Shaders\PixelShader.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shaders\VertexShader.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
