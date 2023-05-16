@@ -10,6 +10,7 @@ namespace Engine
 	// construct an instance of the leaf engine
 	LeafEngine::LeafEngine(int fps, int width, int height, const std::wstring& title) : frameRate(fps), windowWidth(width), windowHeight(height), windowTitle(title)
 	{
+		totalFrames = 0;
 		windowClassName = L"LeafEngineDirectX12WindowClass";
 	}
 
@@ -17,7 +18,7 @@ namespace Engine
 	{
 		if (fenceEvent != nullptr)
 		{
-			// CloseHandle(fenceEvent);
+			CloseHandle(fenceEvent);
 		}
 		// Release other resources...
 	}
@@ -97,34 +98,41 @@ namespace Engine
 		//internalGameSystem.InitSystems();
 
 		// GameSceneSystem sceneSystem = GameSceneSystem();
-		while (msg.message != WM_QUIT)
+		while (true)
 		{
 			// Handle window messages
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
+				if (msg.message == WM_QUIT)
+					break;
+
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-			else
+
+			// Calculate delta time and total time
+			QueryPerformanceCounter(&currTime);
+			deltaTime = static_cast<double>(currTime.QuadPart - prevTime.QuadPart) / frequency.QuadPart;
+			prevTime = currTime;
+			totalTime += deltaTime;
+
+			// Check if it's time to update the screen
+			if (totalTime >= frameTime)
 			{
-				// Calculate delta time and total time
-				QueryPerformanceCounter(&currTime);
-				deltaTime = static_cast<double>(currTime.QuadPart - prevTime.QuadPart) / frequency.QuadPart;
-				prevTime = currTime;
-				totalTime += deltaTime;
-				// Check if it's time to update the screen
-				if (totalTime >= frameTime)
-				{
-					// first update all internal systems
-					//internalGameSystem.UpdateSystems();
+				// update all internal systems
+				//internalGameSystem.UpdateSystems();
 
-					RenderFrame();
+				// render the current frame
+				RenderFrame();
 
-					// Subtract frame time from total time
-					totalTime -= frameTime;
-					// Update total amount of frames
-					totalFrames++;
-				}
+				// Update the frame index
+				frameIndex = swapChain->GetCurrentBackBufferIndex();
+
+				// Update total amount of frames
+				totalFrames++;
+
+				// Subtract frame time from total time
+				totalTime -= frameTime;
 			}
 		}
 
@@ -134,107 +142,110 @@ namespace Engine
 		return static_cast<int>(msg.wParam);
 	}
 
+	inline void ThrowIfFailed(HRESULT hr)
+	{
+		if (FAILED(hr))
+		{
+			// Set a breakpoint on this line to catch DirectX API errors
+			throw std::runtime_error("A DirectX API call has failed");
+		}
+	}
+
 	void LeafEngine::RenderFrame()
 	{
 #if defined(_DEBUG)
 		std::cout << "Rendering Frame " << GetTotalFrames() << " at frame index " << frameIndex << std::endl;
 #endif
 
-		// Wait for the GPU to finish presenting the previous frame that used the same back buffer
-		auto fence = fences[frameIndex].Get();
-		const UINT64 fenceValue = fenceValues[frameIndex];
-		if (fence->GetCompletedValue() < fenceValue)
+		// Get the index of the current back buffer.
+		UINT currentFrameIndex = swapChain->GetCurrentBackBufferIndex();
+
+		// If the next frame is not ready to be rendered yet, wait until it is ready.
+		if (fences[currentFrameIndex]->GetCompletedValue() < fenceValues[currentFrameIndex])
 		{
-			HANDLE event = GetFenceEvent();
-			fence->SetEventOnCompletion(fenceValue, event);
-			WaitForSingleObject(event, INFINITE);
+			HRESULT hr = fences[currentFrameIndex]->SetEventOnCompletion(fenceValues[currentFrameIndex], fenceEvent);
+			if (FAILED(hr))
+			{
+				std::cout << "Error setting completion event " << hr << std::endl;
+				return;
+			}
+
+			DWORD waitResult = WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
+			if (waitResult != WAIT_OBJECT_0)
+			{
+				std::cout << "Error waiting for fence event " << GetLastError() << std::endl;
+				return;
+			}
 		}
 
-		// Command list allocation
-		auto allocator = commandAllocators[frameIndex].Get();
-		HRESULT hr = allocator->Reset();
+		HRESULT hr = commandAllocators[currentFrameIndex]->Reset();
 		if (FAILED(hr))
 		{
-			std::wcout << "Failed to reset command allocator: " << hr << std::endl;
+			std::cout << "Error resetting command allocator " << hr << std::endl;
 			return;
 		}
 
-		// Get the index of the current back buffer
-		UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
-		// Command list recording
-		auto commandList = commandLists[frameIndex].Get();
-		hr = commandList->Reset(allocator, pipelineState.Get());
+		hr = commandLists[currentFrameIndex]->Reset(commandAllocators[currentFrameIndex].Get(), pipelineState.Get());
 		if (FAILED(hr))
 		{
-			std::wcout << "Failed to reset command list: " << hr << std::endl;
+			std::cout << "Error resetting command list " << hr << std::endl;
 			return;
 		}
 
-		// Set the necessary state
-		commandList->SetGraphicsRootSignature(rootSignature.Get());
+		// Record commands.
+		CD3DX12_RESOURCE_BARRIER barrier1 = CD3DX12_RESOURCE_BARRIER::Transition(backBuffers[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrier1);
 
-		// Set up the viewport and scissor rect
-		commandList->RSSetViewports(1, &viewport);
-		commandList->RSSetScissorRects(1, &scissorRect);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), currentFrameIndex, rtvDescriptorSize);
 
-		// Indicate that the back buffer will be used as the render target
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = backBuffers[backBufferIndex].Get();
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		commandList->ResourceBarrier(1, &barrier);
+		// Here record all the commands into the command list
+		commandLists[currentFrameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+		const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+		commandLists[currentFrameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		commandLists[currentFrameIndex]->ClearDepthStencilView(dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		commandLists[currentFrameIndex]->SetGraphicsRootSignature(rootSignature.Get());
 
-		// Clear the render target with the random color
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), backBufferIndex, rtvDescriptorSize);
-		float color[4] = { 1.0, 1.0, 1.0, 1.0 };
-		commandList->ClearRenderTargetView(rtvHandle, color, 0, nullptr);
+		commandLists[currentFrameIndex]->RSSetViewports(1, &viewport);
+		commandLists[currentFrameIndex]->RSSetScissorRects(1, &scissorRect);
 
-		// Record commands
-		// Here you would normally record your actual rendering commands
-		// For example, draw geometry, etc.
+		// Continue recording commands
 
-		// Indicate that the back buffer will now be used to present
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-		commandList->ResourceBarrier(1, &barrier);
+		CD3DX12_RESOURCE_BARRIER barrier2 = CD3DX12_RESOURCE_BARRIER::Transition(backBuffers[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrier2);
 
-		// Close the command list
-		hr = commandList->Close();
+		hr = commandLists[currentFrameIndex]->Close();
 		if (FAILED(hr))
 		{
-			std::wcout << "Failed to close command list: " << hr << std::endl;
+			std::cout << "Error closing command list " << hr << std::endl;
 			return;
 		}
 
-		// Execute the command list
-		ID3D12CommandList* ppCommandLists[] = { commandList };
+		// Execute the command list.
+		ID3D12CommandList* ppCommandLists[] = { commandLists[currentFrameIndex].Get() };
 		commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-		// Present the frame
-		hr = swapChain->Present(0, 0);
+		// Present the frame.
+		DXGI_PRESENT_PARAMETERS presentParameters = {};
+		hr = swapChain->Present1(0, 0, &presentParameters);
 		if (FAILED(hr))
 		{
-			std::wcout << "Failed to present swap chain: " << hr << std::endl;
+			std::cout << "Error presenting frame " << hr << std::endl;
 			return;
 		}
 
-		// Signal the fence for the current frame
-		hr = commandQueue->Signal(fence, fenceValue + 1);
+		// Signal and increment the fence value.
+		const UINT64 fence = fenceValues[currentFrameIndex];
+		hr = commandQueue->Signal(fences[currentFrameIndex].Get(), fence);
 		if (FAILED(hr))
 		{
-			std::wcout << "Failed to signal command queue: " << hr << std::endl;
+			std::cout << "Error signaling fence " << hr << std::endl;
 			return;
 		}
+		fenceValues[currentFrameIndex]++;
 
-		// Update the fence value for the current frame
-		fenceValues[frameIndex] = fenceValue + 1;
-
-		// Alternate the frame index for double buffering
-		frameIndex = (frameIndex + 1) % 2;
+#if defined(_DEBUG)
+		std::cout << "Finished Rendering Frame " << GetTotalFrames() << std::endl;
+#endif
 	}
 
 	void LeafEngine::OnResize(UINT width, UINT height)
@@ -364,7 +375,7 @@ namespace Engine
 		this->commandAllocators = commandAllocators;
 	}
 
-	const std::vector<ComPtr<ID3D12Resource>>& LeafEngine::GetRenderTargets() const
+	std::vector<ComPtr<ID3D12Resource>>& LeafEngine::GetRenderTargets()
 	{
 		return renderTargets;
 	}

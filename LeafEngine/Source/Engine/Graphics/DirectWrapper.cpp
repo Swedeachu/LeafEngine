@@ -27,8 +27,22 @@ namespace Graphics
 
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		psoDesc.DepthStencilState.DepthEnable = FALSE;
+
+		psoDesc.DepthStencilState.DepthEnable = TRUE;
+		psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 		psoDesc.DepthStencilState.StencilEnable = FALSE;
+		psoDesc.DepthStencilState.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+		psoDesc.DepthStencilState.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+		psoDesc.DepthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		psoDesc.DepthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		psoDesc.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		psoDesc.DepthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		psoDesc.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		psoDesc.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		psoDesc.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		psoDesc.DepthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
@@ -47,7 +61,7 @@ namespace Graphics
 
 	ComPtr<IDXGISwapChain3> createSwapChain(Engine::LeafEngine& engine, ComPtr<IDXGIFactory4> factory, ComPtr<ID3D12CommandQueue> commandQueue)
 	{
-		// construct the swap chain and its values
+		// Construct the swap chain and its values
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 		swapChainDesc.BufferCount = 2; // Double buffering
 		swapChainDesc.Width = engine.GetWindowWidth();
@@ -69,23 +83,50 @@ namespace Graphics
 			return nullptr;
 		}
 
-		// Create a vector to hold the back buffer resources
-		std::vector<ComPtr<ID3D12Resource>> backBuffers(swapChainDesc.BufferCount);
-
 		// Retrieve the back buffer resources from the swap chain
+		std::vector<ComPtr<ID3D12Resource>> backBuffers(swapChainDesc.BufferCount);
 		for (UINT i = 0; i < swapChainDesc.BufferCount; ++i)
 		{
 			if (FAILED(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i]))))
 			{
 				// Handle error
-				throw std::runtime_error("Failed to get buffer from swap chain.");
+				return nullptr;
 			}
 		}
 
 		// Set the back buffer resources in the engine
 		engine.SetBackBuffers(backBuffers);
 
-		// then we can return the swapChain object
+		// Create a vector to hold the command allocators and command lists
+		// Modify here to create command allocators and command lists for each frame
+		UINT frameCount = 2;
+		std::vector<ComPtr<ID3D12CommandAllocator>> commandAllocators(frameCount);
+		std::vector<ComPtr<ID3D12GraphicsCommandList>> commandLists(frameCount);
+
+		for (UINT i = 0; i < frameCount; ++i)
+		{
+			ComPtr<ID3D12CommandAllocator> commandAllocator;
+			if (FAILED(engine.GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator))))
+			{
+				// Handle error
+				return nullptr;
+			}
+			commandAllocators[i] = commandAllocator;
+
+			ComPtr<ID3D12GraphicsCommandList> commandList;
+			if (FAILED(engine.GetDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList))))
+			{
+				// Handle error
+				return nullptr;
+			}
+			commandList->Close();
+			commandLists[i] = commandList;
+		}
+
+		// Set the command allocators and command lists in the engine
+		engine.SetCommandAllocators(commandAllocators);
+		engine.SetCommandLists(commandLists);
+
 		return swapChain;
 	}
 
@@ -284,23 +325,21 @@ namespace Graphics
 	void InitializeRTVDescriptorHeap(Engine::LeafEngine& engine)
 	{
 		ComPtr<ID3D12Device> device = engine.GetDevice();
-		ComPtr<IDXGISwapChain3> swapChain = engine.GetSwapChain();
+		// Get the descriptor handle increment size for RTV.
+		UINT rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		// Create a RTV descriptor heap.
 		ComPtr<ID3D12DescriptorHeap> rtvHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2);
-		// Save the RTV heap in the engine instance
+		// Save the RTV heap in the engine instance.
 		engine.SetRtvHeap(rtvHeap);
-		// Create a RTV for each frame.
+		// Create a CPU descriptor handle for the RTV heap start.
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		UINT rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		for (UINT i = 0; i < 2; i++)
+		// Set the RTV handles in the engine for each back buffer.
+		std::vector<ComPtr<ID3D12Resource>>& backBuffers = engine.GetBackBuffers();
+		for (UINT i = 0; i < backBuffers.size(); ++i)
 		{
-			ComPtr<ID3D12Resource> backBuffer;
-			if (FAILED(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer))))
-			{
-				// Handle error
-				return;
-			}
-			device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
+			// Create a RTV for the back buffer resource.
+			device->CreateRenderTargetView(backBuffers[i].Get(), nullptr, rtvHandle);
+			// Increment the RTV handle.
 			rtvHandle.ptr += rtvDescriptorSize;
 		}
 	}
@@ -446,7 +485,8 @@ namespace Graphics
 		// Get the handle to the first descriptor in the RTV heap.
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = engine.GetRtvHeap()->GetCPUDescriptorHandleForHeapStart();
 
-		std::vector<ComPtr<ID3D12Resource>> renderTargets(2);
+		// Clear the existing render targets
+		engine.GetRenderTargets().clear();
 
 		for (UINT i = 0; i < 2; i++)
 		{
@@ -463,19 +503,17 @@ namespace Graphics
 			// Increment the RTV handle.
 			rtvHandle.ptr += rtvDescriptorSize;
 
-			renderTargets[i] = backBuffer;
+			// Add the back buffer to the render targets vector
+			engine.GetRenderTargets().emplace_back(backBuffer);
 		}
-
-		engine.SetRenderTargets(renderTargets);
 	}
 
 	void InitializeFence(Engine::LeafEngine& engine, ComPtr<ID3D12Device> device, ComPtr<ID3D12CommandQueue> commandQueue)
 	{
-			// Define number of frames for buffering (same as the number of back buffers)
 		const int frameCount = 2;
 
 		std::vector<ComPtr<ID3D12Fence>> fences(frameCount);
-		std::vector<UINT64> fenceValues(frameCount, 1);  // Initialize to 1, not 0
+		std::vector<UINT64> fenceValues(frameCount, 0); // Initialize to 0
 
 		for (int i = 0; i < frameCount; ++i)
 		{
@@ -485,12 +523,7 @@ namespace Graphics
 				throw std::runtime_error("Failed to create fence for GPU synchronization.");
 			}
 
-			// Signal the fence immediately after creation
-			if (FAILED(commandQueue->Signal(fences[i].Get(), fenceValues[i])))
-			{
-				// Handle error
-				throw std::runtime_error("Failed to signal fence after creation.");
-			}
+			// Do not signal the fence immediately after creation
 		}
 
 		engine.SetFences(fences);
@@ -513,6 +546,7 @@ namespace Graphics
 
 #if defined(_DEBUG)
 		{
+			// Enable debug layer
 			ComPtr<ID3D12Debug> debugController;
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 			{
@@ -522,6 +556,7 @@ namespace Graphics
 		}
 #endif
 
+		// Create DXGI factory
 		ComPtr<IDXGIFactory4> factory;
 		if (FAILED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&factory))))
 		{
@@ -529,9 +564,11 @@ namespace Graphics
 			return;
 		}
 
+		// Get hardware adapter
 		ComPtr<IDXGIAdapter1> hardwareAdapter;
 		GetHardwareAdapter(factory.Get(), &hardwareAdapter);
 
+		// Create D3D12 device
 		ComPtr<ID3D12Device> device;
 		if (FAILED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device))))
 		{
@@ -541,79 +578,45 @@ namespace Graphics
 
 		engine.SetDevice(device);
 
+		// Create command queue
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
 		ComPtr<ID3D12CommandQueue> commandQueue;
 		if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue))))
 		{
+			// Handle error
 			return;
 		}
-
 		engine.SetCommandQueue(commandQueue);
 
+		// Initialize fence
 		InitializeFence(engine, device, commandQueue);
 
+		// Create swap chain
 		ComPtr<IDXGISwapChain3> swapChain = createSwapChain(engine, factory, commandQueue);
-
 		engine.SetSwapChain(swapChain);
 
+		// Initialize descriptor heaps
 		ConstantBufferData cbData = {};
-
 		InitializeRTVDescriptorHeap(engine);
 		InitializeCBVDescriptorHeap(engine, cbData);
 		InitializeDSVDescriptorHeap(engine);
 
-		CreateRenderTargetViews(engine);
-
-		CreateDepthStencilView(engine);
-
-		ComPtr<ID3D12Resource> backBuffers[2];
-		for (UINT i = 0; i < 2; i++)
-		{
-			if (FAILED(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i]))))
-			{
-				return;
-			}
-		}
-
-		// Define number of frames for buffering (change this to suit your needs)
-		const int frameCount = 2;
-
-		std::vector<ComPtr<ID3D12CommandAllocator>> commandAllocators(frameCount);
-		for (int i = 0; i < frameCount; ++i)
-		{
-			ComPtr<ID3D12CommandAllocator> commandAllocator;
-			if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator))))
-			{
-				return; // Handle error
-			}
-			commandAllocators[i] = commandAllocator;
-		}
-
-		engine.SetCommandAllocators(commandAllocators);
-
-		std::vector<ComPtr<ID3D12GraphicsCommandList>> commandLists(frameCount);
-		for (int i = 0; i < frameCount; ++i)
-		{
-			ComPtr<ID3D12GraphicsCommandList> commandList;
-			if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[i].Get(), nullptr, IID_PPV_ARGS(&commandList))))
-			{
-				return; // Handle error
-			}
-			commandList->Close();
-			commandLists[i] = commandList;
-		}
-
-		engine.SetCommandLists(commandLists);
-
+		// Create root signature and pipeline state
 		ComPtr<ID3D12RootSignature> rootSignature = createRootSignature(device);
 		engine.SetRootSignature(rootSignature);
 		ComPtr<ID3D12PipelineState> pipeline = createPipeline(rootSignature, device);
 		engine.SetPipelineState(pipeline);
 
+		// Create vertex and index buffers
 		VerticeIndexBuffer(engine, device, (float)(engine.GetWindowWidth() / engine.GetWindowHeight()));
+
+		// Create render target views
+		CreateRenderTargetViews(engine);
+
+		// Create depth/stencil view
+		CreateDepthStencilView(engine);
 	}
 
 } // Graphics

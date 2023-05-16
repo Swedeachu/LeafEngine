@@ -7,7 +7,7 @@
 namespace Entry
 {
 	// creates an instance of the leaf engine
-	Engine::LeafEngine engine(60, 300, 300, L"Leaf Test");
+	Engine::LeafEngine engine(1, 300, 300, L"Leaf Test");
 }
 
 using namespace Entry;

@@ -51,7 +51,7 @@ namespace Engine
 		std::vector<ComPtr<ID3D12CommandAllocator>> GetCommandAllocators() const;
 		void SetCommandAllocators(const std::vector<ComPtr<ID3D12CommandAllocator>>& commandAllocators);
 
-		const std::vector<ComPtr<ID3D12Resource>>& GetRenderTargets() const;
+		std::vector<ComPtr<ID3D12Resource>>& GetRenderTargets();
 		void SetRenderTargets(const std::vector<ComPtr<ID3D12Resource>>& renderTargets);
 
 		ComPtr<ID3D12RootSignature> GetRootSignature() const;
