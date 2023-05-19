@@ -142,15 +142,7 @@ namespace Engine
 		return static_cast<int>(msg.wParam);
 	}
 
-	inline void ThrowIfFailed(HRESULT hr)
-	{
-		if (FAILED(hr))
-		{
-			// Set a breakpoint on this line to catch DirectX API errors
-			throw std::runtime_error("A DirectX API call has failed");
-		}
-	}
-
+	// this function is called in the core loop for handling frames
 	void LeafEngine::RenderFrame()
 	{
 #if defined(_DEBUG)
@@ -159,7 +151,6 @@ namespace Engine
 
 		// Get the index of the current back buffer.
 		UINT currentFrameIndex = swapChain->GetCurrentBackBufferIndex();
-
 		// If the next frame is not ready to be rendered yet, wait until it is ready.
 		if (fences[currentFrameIndex]->GetCompletedValue() < fenceValues[currentFrameIndex])
 		{
@@ -177,43 +168,16 @@ namespace Engine
 				return;
 			}
 		}
+		// Increment fence value for the current frame.
+		fenceValues[currentFrameIndex]++;
 
-		HRESULT hr = commandAllocators[currentFrameIndex]->Reset();
-		if (FAILED(hr))
-		{
-			std::cout << "Error resetting command allocator " << hr << std::endl;
-			return;
-		}
+		// reset the commands list and allocator for this frame
+		ResetCommandList(currentFrameIndex);
 
-		hr = commandLists[currentFrameIndex]->Reset(commandAllocators[currentFrameIndex].Get(), pipelineState.Get());
-		if (FAILED(hr))
-		{
-			std::cout << "Error resetting command list " << hr << std::endl;
-			return;
-		}
+		// Call the draw function with the desired background color
+		// draw(currentFrameIndex);
 
-		// Record commands.
-		CD3DX12_RESOURCE_BARRIER barrier1 = CD3DX12_RESOURCE_BARRIER::Transition(backBuffers[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrier1);
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), currentFrameIndex, rtvDescriptorSize);
-
-		// Here record all the commands into the command list
-		commandLists[currentFrameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-		const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-		commandLists[currentFrameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		commandLists[currentFrameIndex]->ClearDepthStencilView(dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-		commandLists[currentFrameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-
-		commandLists[currentFrameIndex]->RSSetViewports(1, &viewport);
-		commandLists[currentFrameIndex]->RSSetScissorRects(1, &scissorRect);
-
-		// Continue recording commands
-
-		CD3DX12_RESOURCE_BARRIER barrier2 = CD3DX12_RESOURCE_BARRIER::Transition(backBuffers[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrier2);
-
-		hr = commandLists[currentFrameIndex]->Close();
+		HRESULT hr = commandLists[currentFrameIndex]->Close();
 		if (FAILED(hr))
 		{
 			std::cout << "Error closing command list " << hr << std::endl;
@@ -225,27 +189,57 @@ namespace Engine
 		commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 		// Present the frame.
-		DXGI_PRESENT_PARAMETERS presentParameters = {};
-		hr = swapChain->Present1(0, 0, &presentParameters);
+		hr = swapChain->Present(0, 0);
 		if (FAILED(hr))
 		{
 			std::cout << "Error presenting frame " << hr << std::endl;
 			return;
 		}
 
-		// Signal and increment the fence value.
-		const UINT64 fence = fenceValues[currentFrameIndex];
-		hr = commandQueue->Signal(fences[currentFrameIndex].Get(), fence);
+		// Signal the fence.
+		hr = commandQueue->Signal(fences[currentFrameIndex].Get(), fenceValues[currentFrameIndex]);
 		if (FAILED(hr))
 		{
 			std::cout << "Error signaling fence " << hr << std::endl;
 			return;
 		}
-		fenceValues[currentFrameIndex]++;
 
 #if defined(_DEBUG)
 		std::cout << "Finished Rendering Frame " << GetTotalFrames() << std::endl;
 #endif
+	}
+
+	void LeafEngine::ResetCommandList(UINT currentFrameIndex)
+	{
+		HRESULT hr = commandAllocators[currentFrameIndex]->Reset();
+		if (FAILED(hr))
+		{
+			std::cout << "Error resetting command allocator " << hr << std::endl;
+			return;
+		}
+		hr = commandLists[currentFrameIndex]->Reset(commandAllocators[currentFrameIndex].Get(), pipelineState.Get());
+		if (FAILED(hr))
+		{
+			std::cout << "Error resetting command list " << hr << std::endl;
+			return;
+		}
+	}
+
+	// extracted out code to draw specific things in a cleaner function
+	void LeafEngine::draw(UINT currentFrameIndex)
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), currentFrameIndex, rtvDescriptorSize);
+		float clearColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f }; // Example: red color
+
+		CD3DX12_RESOURCE_BARRIER barrierTransitionToRT = CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		CD3DX12_RESOURCE_BARRIER barrierTransitionToPresent = CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrierTransitionToRT);
+
+		// Clear the render target view
+		commandLists[currentFrameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrierTransitionToPresent);
 	}
 
 	void LeafEngine::OnResize(UINT width, UINT height)

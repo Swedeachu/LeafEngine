@@ -173,6 +173,8 @@ namespace Engine
 		// rendering
 
 		void RenderFrame();
+		void ResetCommandList(UINT currentFrameIndex);
+		void draw(UINT currentFrameIndex);
 
 	};
 
