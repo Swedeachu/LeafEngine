@@ -3,6 +3,7 @@
 #include "GameScene/GameSceneSystem.h"
 #include "System/GameSystem.h"
 #include "Graphics/DirectWrapper.h"
+#include "LeafMath/LeafRandom.h"
 
 namespace Engine
 {
@@ -11,15 +12,11 @@ namespace Engine
 	LeafEngine::LeafEngine(int fps, int width, int height, const std::wstring& title) : frameRate(fps), windowWidth(width), windowHeight(height), windowTitle(title)
 	{
 		totalFrames = 0;
-		windowClassName = L"LeafEngineDirectX12WindowClass";
+		windowClassName = L"LeafEngineWindowClassDX";
 	}
 
 	LeafEngine::~LeafEngine()
 	{
-		if (fenceEvent != nullptr)
-		{
-			CloseHandle(fenceEvent);
-		}
 		// Release other resources...
 	}
 
@@ -77,7 +74,7 @@ namespace Engine
 		}
 
 		// Set up the DirectX device and other needed things on the LeafEngine instance
-		Graphics::InitializeDirectX12(*this);
+		this->directWrapper.InitializeDirectX(engineWindowHandle, windowWidth, windowHeight);
 
 		// Show the window
 		ShowWindow(engineWindowHandle, SW_SHOW);
@@ -125,9 +122,6 @@ namespace Engine
 				// render the current frame
 				RenderFrame();
 
-				// Update the frame index
-				frameIndex = swapChain->GetCurrentBackBufferIndex();
-
 				// Update total amount of frames
 				totalFrames++;
 
@@ -146,134 +140,22 @@ namespace Engine
 	void LeafEngine::RenderFrame()
 	{
 #if defined(_DEBUG)
-		std::cout << "Rendering Frame " << GetTotalFrames() << " at frame index " << frameIndex << std::endl;
+		std::cout << "Rendering Frame " << GetTotalFrames() << std::endl;
 #endif
 
-		// Get the index of the current back buffer.
-		UINT currentFrameIndex = swapChain->GetCurrentBackBufferIndex();
-		// If the next frame is not ready to be rendered yet, wait until it is ready.
-		if (fences[currentFrameIndex]->GetCompletedValue() < fenceValues[currentFrameIndex])
-		{
-			HRESULT hr = fences[currentFrameIndex]->SetEventOnCompletion(fenceValues[currentFrameIndex], fenceEvent);
-			if (FAILED(hr))
-			{
-				std::cout << "Error setting completion event " << hr << std::endl;
-				return;
-			}
+		ID3D11DeviceContext* deviceContext = directWrapper.GetDeviceContext();
 
-			DWORD waitResult = WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
-			if (waitResult != WAIT_OBJECT_0)
-			{
-				std::cout << "Error waiting for fence event " << GetLastError() << std::endl;
-				return;
-			}
-		}
-		// Increment fence value for the current frame.
-		fenceValues[currentFrameIndex]++;
+		// Clear the render target view with a red color
+		float clearColor[4] = { LeafMath::RandomNumber<float>(0.0f, 1.0f), LeafMath::RandomNumber<float>(0.0f, 1.0f), LeafMath::RandomNumber<float>(0.0f, 1.0f), 1.0f};
+		// float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		deviceContext->ClearRenderTargetView(directWrapper.GetRenderTargetView(), clearColor);
 
-		// reset the commands list and allocator for this frame
-		ResetCommandList(currentFrameIndex);
-
-		// Call the draw function with the desired background color
-		// draw(currentFrameIndex);
-
-		HRESULT hr = commandLists[currentFrameIndex]->Close();
-		if (FAILED(hr))
-		{
-			std::cout << "Error closing command list " << hr << std::endl;
-			return;
-		}
-
-		// Execute the command list.
-		ID3D12CommandList* ppCommandLists[] = { commandLists[currentFrameIndex].Get() };
-		commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-		// Present the frame.
-		hr = swapChain->Present(0, 0);
-		if (FAILED(hr))
-		{
-			std::cout << "Error presenting frame " << hr << std::endl;
-			return;
-		}
-
-		// Signal the fence.
-		hr = commandQueue->Signal(fences[currentFrameIndex].Get(), fenceValues[currentFrameIndex]);
-		if (FAILED(hr))
-		{
-			std::cout << "Error signaling fence " << hr << std::endl;
-			return;
-		}
+		// Present the rendered frame
+		directWrapper.Present();
 
 #if defined(_DEBUG)
 		std::cout << "Finished Rendering Frame " << GetTotalFrames() << std::endl;
 #endif
-	}
-
-	void LeafEngine::ResetCommandList(UINT currentFrameIndex)
-	{
-		HRESULT hr = commandAllocators[currentFrameIndex]->Reset();
-		if (FAILED(hr))
-		{
-			std::cout << "Error resetting command allocator " << hr << std::endl;
-			return;
-		}
-		hr = commandLists[currentFrameIndex]->Reset(commandAllocators[currentFrameIndex].Get(), pipelineState.Get());
-		if (FAILED(hr))
-		{
-			std::cout << "Error resetting command list " << hr << std::endl;
-			return;
-		}
-	}
-
-	// extracted out code to draw specific things in a cleaner function
-	void LeafEngine::draw(UINT currentFrameIndex)
-	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), currentFrameIndex, rtvDescriptorSize);
-		float clearColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f }; // Example: red color
-
-		CD3DX12_RESOURCE_BARRIER barrierTransitionToRT = CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		CD3DX12_RESOURCE_BARRIER barrierTransitionToPresent = CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
-		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrierTransitionToRT);
-
-		// Clear the render target view
-		commandLists[currentFrameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
-		commandLists[currentFrameIndex]->ResourceBarrier(1, &barrierTransitionToPresent);
-	}
-
-	void LeafEngine::OnResize(UINT width, UINT height)
-	{
-		if (device == nullptr)
-		{
-			return;
-		}
-
-		// Update the aspect ratio
-		aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-		// Resize the swap chain
-		HRESULT hr = swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-		if (FAILED(hr))
-		{
-			// Handle error
-			return;
-		}
-
-		// Update the render target views and depth stencil view
-		Graphics::CreateRenderTargetViews(*this);
-		Graphics::CreateDepthStencilView(*this);
-
-		// Set the viewport and scissor rect
-		viewport.Width = static_cast<float>(width);
-		viewport.Height = static_cast<float>(height);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-
-		scissorRect.right = static_cast<LONG>(width);
-		scissorRect.bottom = static_cast<LONG>(height);
 	}
 
 #pragma region Window properties
@@ -326,258 +208,5 @@ namespace Engine
 	}
 
 #pragma endregion end of window properties
-
-#pragma region Graphical getters and setters
-
-	ComPtr<ID3D12Device> LeafEngine::GetDevice() const
-	{
-		return device;
-	}
-
-	void LeafEngine::SetDevice(ComPtr<ID3D12Device> device)
-	{
-		this->device = device;
-	}
-
-	ComPtr<ID3D12CommandQueue> LeafEngine::GetCommandQueue() const
-	{
-		return commandQueue;
-	}
-
-	void LeafEngine::SetCommandQueue(const ComPtr<ID3D12CommandQueue>& queue)
-	{
-		commandQueue = queue;
-	}
-
-	std::vector<ComPtr<ID3D12GraphicsCommandList>> LeafEngine::GetCommandLists() const
-	{
-		return commandLists;
-	}
-
-	void LeafEngine::SetCommandLists(const std::vector<ComPtr<ID3D12GraphicsCommandList>>& newCommandLists)
-	{
-		commandLists = newCommandLists;
-	}
-
-	std::vector<ComPtr<ID3D12CommandAllocator>> LeafEngine::GetCommandAllocators() const
-	{
-		return commandAllocators;
-	}
-
-	void LeafEngine::SetCommandAllocators(const std::vector<ComPtr<ID3D12CommandAllocator>>& commandAllocators)
-	{
-		this->commandAllocators = commandAllocators;
-	}
-
-	std::vector<ComPtr<ID3D12Resource>>& LeafEngine::GetRenderTargets()
-	{
-		return renderTargets;
-	}
-
-	void LeafEngine::SetRenderTargets(const std::vector<ComPtr<ID3D12Resource>>& renderTargets)
-	{
-		this->renderTargets = renderTargets;
-	}
-
-	ComPtr<ID3D12RootSignature> LeafEngine::GetRootSignature() const
-	{
-		return rootSignature;
-	}
-
-	void LeafEngine::SetRootSignature(const ComPtr<ID3D12RootSignature>& newRootSignature)
-	{
-		rootSignature = newRootSignature;
-	}
-
-	ComPtr<ID3D12PipelineState> LeafEngine::GetPipelineState() const
-	{
-		return pipelineState;
-	}
-
-	void LeafEngine::SetPipelineState(const ComPtr<ID3D12PipelineState>& newPipelineState)
-	{
-		pipelineState = newPipelineState;
-	}
-
-	void LeafEngine::SetFences(std::vector<ComPtr<ID3D12Fence>> fences)
-	{
-		this->fences = fences;
-	}
-
-	std::vector<ComPtr<ID3D12Fence>>& LeafEngine::GetFences()
-	{
-		return fences;
-	}
-
-	void  LeafEngine::SetFenceValues(std::vector<UINT64> fenceValues)
-	{
-		this->fenceValues = fenceValues;
-	}
-	std::vector<UINT64>& LeafEngine::GetFenceValues()
-	{
-		return fenceValues;
-	}
-
-	HANDLE LeafEngine::GetFenceEvent() const
-	{
-		return fenceEvent;
-	}
-
-	void LeafEngine::SetFenceEvent(HANDLE event)
-	{
-		fenceEvent = event;
-	}
-
-	UINT LeafEngine::GetFrameIndex() const
-	{
-		return frameIndex;
-	}
-
-	void LeafEngine::SetFrameIndex(UINT index)
-	{
-		frameIndex = index;
-	}
-
-	ComPtr<IDXGISwapChain3> LeafEngine::GetSwapChain() const
-	{
-		return swapChain;
-	}
-
-	void LeafEngine::SetSwapChain(const ComPtr<IDXGISwapChain3>& chain)
-	{
-		swapChain = chain;
-	}
-
-	void LeafEngine::SetBackBuffers(std::vector<ComPtr<ID3D12Resource>> backBuffers)
-	{
-		this->backBuffers = backBuffers;
-	}
-
-	std::vector<ComPtr<ID3D12Resource>>& LeafEngine::GetBackBuffers()
-	{
-		return backBuffers;
-	}
-
-	void LeafEngine::SetConstantBuffer(const ComPtr<ID3D12Resource>& constantBuffer)
-	{
-		m_constantBuffer = constantBuffer;
-	}
-
-	ComPtr<ID3D12Resource> LeafEngine::GetConstantBuffer() const
-	{
-		return m_constantBuffer;
-	}
-
-	ComPtr<ID3D12DescriptorHeap> LeafEngine::GetRtvHeap() const
-	{
-		return rtvHeap;
-	}
-
-	void LeafEngine::SetRtvHeap(const ComPtr<ID3D12DescriptorHeap>& rtvHeap)
-	{
-		this->rtvHeap = rtvHeap;
-	}
-
-	ComPtr<ID3D12DescriptorHeap> LeafEngine::GetDsvHeap() const
-	{
-		return dsvHeap;
-	}
-
-	void LeafEngine::SetDsvHeap(const ComPtr<ID3D12DescriptorHeap>& newDsvHeap)
-	{
-		dsvHeap = newDsvHeap;
-	}
-
-	ComPtr<ID3D12DescriptorHeap> LeafEngine::GetCbvHeap() const
-	{
-		return this->cbvHeap;
-	}
-
-	void LeafEngine::SetCbvHeap(const ComPtr<ID3D12DescriptorHeap>& cbvHeap)
-	{
-		this->cbvHeap = cbvHeap;
-	}
-
-	ComPtr<ID3D12Resource> LeafEngine::GetDepthStencil() const
-	{
-		return depthStencil;
-	}
-
-	void LeafEngine::SetDepthStencil(const ComPtr<ID3D12Resource>& newDepthStencil)
-	{
-		depthStencil = newDepthStencil;
-	}
-
-	void LeafEngine::SetVertexBufferView(const D3D12_VERTEX_BUFFER_VIEW& view)
-	{
-		this->vertexBufferView = view;
-	}
-
-	D3D12_VERTEX_BUFFER_VIEW LeafEngine::GetVertexBufferView() const
-	{
-		return this->vertexBufferView;
-	}
-
-	void LeafEngine::SetIndexBufferView(const D3D12_INDEX_BUFFER_VIEW& view)
-	{
-		this->indexBufferView = view;
-	}
-
-	D3D12_INDEX_BUFFER_VIEW LeafEngine::GetIndexBufferView() const
-	{
-		return this->indexBufferView;
-	}
-
-	void LeafEngine::SetVertexBuffer(ComPtr<ID3D12Resource> vb)
-	{
-		vertexBuffer = vb;
-	}
-
-	ComPtr<ID3D12Resource> LeafEngine::GetVertexBuffer() const
-	{
-		return vertexBuffer;
-	}
-
-	void LeafEngine::SetIndexBuffer(ComPtr<ID3D12Resource> ib)
-	{
-		indexBuffer = ib;
-	}
-
-	ComPtr<ID3D12Resource> LeafEngine::GetIndexBuffer() const
-	{
-		return indexBuffer;
-	}
-
-	D3D12_VIEWPORT LeafEngine::GetViewport() const
-	{
-		return viewport;
-	}
-
-	void LeafEngine::SetViewport(const D3D12_VIEWPORT& vp)
-	{
-		viewport = vp;
-	}
-
-	D3D12_RECT LeafEngine::GetScissorRect() const
-	{
-		return scissorRect;
-	}
-
-	void LeafEngine::SetScissorRect(const D3D12_RECT& rect)
-	{
-		scissorRect = rect;
-	}
-
-	float LeafEngine::GetAspectRatio() const
-	{
-		return aspectRatio;
-	}
-
-	void LeafEngine::SetAspectRatio(float ratio)
-	{
-		aspectRatio = ratio;
-	}
-
-#pragma endregion End of Graphical getters and setters
 
 } // Engine

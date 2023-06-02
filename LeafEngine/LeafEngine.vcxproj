@@ -26,8 +26,9 @@
     <ClCompile Include="Source\Engine\Graphics\DirectWrapper.cpp" />
     <ClCompile Include="Source\Engine\Graphics\Mesh.cpp" />
     <ClCompile Include="Source\Engine\LeafEngine.cpp" />
-    <ClCompile Include="Source\Engine\Math\Matrix2D.cpp" />
-    <ClCompile Include="Source\Engine\Math\Vector2D.cpp" />
+    <ClCompile Include="Source\Engine\LeafMath\LeafRandom.cpp" />
+    <ClCompile Include="Source\Engine\LeafMath\Matrix2D.cpp" />
+    <ClCompile Include="Source\Engine\LeafMath\Vector2D.cpp" />
     <ClCompile Include="Source\Engine\stdafx.cpp" />
     <ClCompile Include="Source\Engine\System\GameSystem.cpp" />
     <ClCompile Include="Source\Engine\System\InternalSystem.cpp" />
@@ -42,8 +43,9 @@
     <ClInclude Include="Source\Engine\Graphics\DirectWrapper.h" />
     <ClInclude Include="Source\Engine\Graphics\Mesh.h" />
     <ClInclude Include="Source\Engine\LeafEngine.h" />
-    <ClInclude Include="Source\Engine\Math\Matrix2D.h" />
-    <ClInclude Include="Source\Engine\Math\Vector2D.h" />
+    <ClInclude Include="Source\Engine\LeafMath\LeafRandom.h" />
+    <ClInclude Include="Source\Engine\LeafMath\Matrix2D.h" />
+    <ClInclude Include="Source\Engine\LeafMath\Vector2D.h" />
     <ClInclude Include="Source\Engine\stdafx.h" />
     <ClInclude Include="Source\Engine\System\GameSystem.h" />
     <ClInclude Include="Source\Engine\System\InternalSystem.h" />

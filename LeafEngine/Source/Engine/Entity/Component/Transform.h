@@ -1,8 +1,8 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "..\..\Math\Vector2D.h"
-#include "..\..\Math\Matrix2D.h"
+#include "..\..\LeafMath\Vector2D.h"
+#include "..\..\LeafMath\Matrix2D.h"
 
 namespace Component
 {

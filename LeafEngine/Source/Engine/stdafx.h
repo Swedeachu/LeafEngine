@@ -1,22 +1,19 @@
 #pragma once
 
-// windows directx system dependenices
+// windows 
 #include <Windows.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
+
+// directx
+#include <d3d11.h>
+#pragma comment(lib, "d3d11.lib")
 #include <d3dcompiler.h>
+#pragma comment(lib, "d3dcompiler.lib")
+
+// directx math
 #include <DirectXPackedVector.h>
 #include <DirectXMath.h>
-// #include <atlbase.h>
-#include "..\..\..\include\d3dx12.h"
-#include "..\..\..\include\ReadData.h"
 
 // standard includes
 #include <string>
 #include <vector>
 #include <iostream>
-
-// smart pointers
-#include <wrl/client.h>
-
-using Microsoft::WRL::ComPtr;

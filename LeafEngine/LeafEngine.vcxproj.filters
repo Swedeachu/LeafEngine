@@ -20,9 +20,6 @@
     <Filter Include="Source Files\Engine\Graphics">
       <UniqueIdentifier>{55bb580c-4b40-4a5b-97f2-dec7f665fa8b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Engine\Math">
-      <UniqueIdentifier>{be40da67-c06e-40ea-af27-89ce8a00e1ab}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Engine\Entity">
       <UniqueIdentifier>{7065caec-568d-4e62-91b0-e51a28ced171}</UniqueIdentifier>
     </Filter>
@@ -34,6 +31,9 @@
     </Filter>
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{5d4794ff-ba9c-4b4b-b166-178f2d0f13ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\LeafMath">
+      <UniqueIdentifier>{be40da67-c06e-40ea-af27-89ce8a00e1ab}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -64,12 +64,6 @@
     <ClCompile Include="Source\Engine\Entity\Component\Transform.cpp">
       <Filter>Source Files\Engine\Entity\Component</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Math\Matrix2D.cpp">
-      <Filter>Source Files\Engine\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Math\Vector2D.cpp">
-      <Filter>Source Files\Engine\Math</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\System\GameSystem.cpp">
       <Filter>Source Files\Engine\System</Filter>
     </ClCompile>
@@ -78,6 +72,15 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Graphics\DirectWrapper.cpp">
       <Filter>Source Files\Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\LeafMath\LeafRandom.cpp">
+      <Filter>Source Files\Engine\LeafMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\LeafMath\Matrix2D.cpp">
+      <Filter>Source Files\Engine\LeafMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\LeafMath\Vector2D.cpp">
+      <Filter>Source Files\Engine\LeafMath</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,12 +102,6 @@
     <ClInclude Include="Source\Engine\System\InternalSystem.h">
       <Filter>Source Files\Engine\System</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Math\Matrix2D.h">
-      <Filter>Source Files\Engine\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Math\Vector2D.h">
-      <Filter>Source Files\Engine\Math</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Graphics\DirectWrapper.h">
       <Filter>Source Files\Engine\Graphics</Filter>
     </ClInclude>
@@ -122,6 +119,15 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Entity\Entity.h">
       <Filter>Source Files\Engine\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\LeafMath\LeafRandom.h">
+      <Filter>Source Files\Engine\LeafMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\LeafMath\Matrix2D.h">
+      <Filter>Source Files\Engine\LeafMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\LeafMath\Vector2D.h">
+      <Filter>Source Files\Engine\LeafMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
