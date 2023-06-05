@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Graphics/DirectWrapper.h"  
+#include "System/GameScene/GameSceneSystem.h"
 
 namespace Engine
 {
@@ -22,16 +23,18 @@ namespace Engine
 		int Run();
 
 		// Getter and Setter for frame rate
-
 		int GetFrameRate() const;
 		void SetFrameRate(const int fps);
 		int GetTotalFrames() const;
+		float GetFrameDeltaTime() const;
 
 		// Getter and Setter for window size
-
 		int GetWindowWidth() const;
 		int GetWindowHeight() const;
 		void SetWindowSize(const int width, const int height);
+
+		// Getters for systems
+		GameSystem::GameSceneSystem& GetGameSceneSystem();
 
 		// Get the window handle for the engine's instance
 		HWND GetEngineWindowHandle() const;
@@ -39,8 +42,8 @@ namespace Engine
 	private:
 
 		// window properties
-
 		int frameRate;
+		float frameDeltaTime;
 		int totalFrames;
 		int windowWidth;
 		int windowHeight;
@@ -48,7 +51,6 @@ namespace Engine
 		std::wstring windowClassName;
 
 		// windows api handling
-
 		HWND engineWindowHandle;
 
 		static LRESULT CALLBACK StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -56,9 +58,9 @@ namespace Engine
 
 		// Systems and required components
 		Graphics::DirectWrapper directWrapper;
+		GameSystem::GameSceneSystem gameSceneSystem;
 
 		// rendering/frame update
-
 		void RenderFrame();
 
 	};

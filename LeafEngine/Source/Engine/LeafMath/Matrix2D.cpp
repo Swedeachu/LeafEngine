@@ -35,15 +35,7 @@ namespace LeafMath
 	}
 
 	// Destructor
-	Matrix2D::~Matrix2D()
-	{
-		// Deallocate the 2D array
-		for (int i = 0; i < 4; ++i)
-		{
-			delete[] m[i];
-		}
-		delete[] m;
-	}
+	Matrix2D::~Matrix2D() {}
 
 	// Assignment operator
 	Matrix2D& Matrix2D::operator=(const Matrix2D& other)

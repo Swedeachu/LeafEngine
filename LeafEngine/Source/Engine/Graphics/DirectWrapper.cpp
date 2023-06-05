@@ -14,6 +14,21 @@ namespace Graphics
 		LoadShaders();
 	}
 
+	void DirectWrapper::Release()
+	{
+		renderTargetView->Release();
+		swapChain->Release();
+		deviceContext->Release();
+		device->Release();
+	}
+
+	void DirectWrapper::SetConstantBufferData(const ConstantBufferData& data)
+	{
+		deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &data, 0, 0);
+		deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+		deviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
+	}
+
 	void DirectWrapper::CreateDeviceAndSwapChain(HWND hwnd, int width, int height)
 	{
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -29,8 +44,14 @@ namespace Graphics
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.Windowed = TRUE;
 
+		UINT flags = 0;
+		// Enable debug layer
+#ifdef _DEBUG = 0
+		flags = D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 		D3D11CreateDeviceAndSwapChain(
-			nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0,
+			nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0,
 			D3D11_SDK_VERSION, &swapChainDesc, &swapChain,
 			&device, nullptr, &deviceContext
 		);
@@ -135,6 +156,26 @@ namespace Graphics
 	ID3D11RenderTargetView* DirectWrapper::GetRenderTargetView() const
 	{
 		return renderTargetView;
+	}
+
+	ID3D11VertexShader* DirectWrapper::GetVertexShader() const
+	{
+		return vertexShader;
+	}
+
+	ID3D11PixelShader* DirectWrapper::GetPixelShader() const
+	{
+		return pixelShader;
+	}
+
+	ID3DBlob* DirectWrapper::GetVertexShaderBlob() const
+	{
+		return vertexShaderBlob;
+	}
+
+	ID3DBlob* DirectWrapper::GetPixelShaderBlob() const
+	{
+		return pixelShaderBlob;
 	}
 
 #pragma endregion End of Getters

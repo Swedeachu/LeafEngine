@@ -8,9 +8,6 @@
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{aea700e0-eafe-4c05-9748-ba384da36a71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Engine\GameScene">
-      <UniqueIdentifier>{d0769e9a-6564-4e64-acbf-53daacd0c6e1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{cb731508-00b0-4f6c-9615-8cbb9134cf84}</UniqueIdentifier>
     </Filter>
@@ -35,6 +32,9 @@
     <Filter Include="Source Files\Engine\LeafMath">
       <UniqueIdentifier>{be40da67-c06e-40ea-af27-89ce8a00e1ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine\System\GameScene">
+      <UniqueIdentifier>{7d4d98cf-776a-4e39-8674-c85b2a25af79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Entry.cpp">
@@ -46,29 +46,14 @@
     <ClCompile Include="Source\Engine\stdafx.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\GameScene\GameScene.cpp">
-      <Filter>Source Files\Engine\GameScene</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\Scenes\Sandbox.cpp">
       <Filter>Source Files\Game\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\Graphics\Mesh.cpp">
-      <Filter>Source Files\Engine\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\GameScene\GameSceneSystem.cpp">
-      <Filter>Source Files\Engine\GameScene</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Entity\Entity.cpp">
       <Filter>Source Files\Engine\Entity</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Entity\Component\Transform.cpp">
       <Filter>Source Files\Engine\Entity\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\System\GameSystem.cpp">
-      <Filter>Source Files\Engine\System</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Engine\System\InternalSystem.cpp">
-      <Filter>Source Files\Engine\System</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Graphics\DirectWrapper.cpp">
       <Filter>Source Files\Engine\Graphics</Filter>
@@ -81,6 +66,21 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\LeafMath\Vector2D.cpp">
       <Filter>Source Files\Engine\LeafMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\System\GameScene\GameSceneSystem.cpp">
+      <Filter>Source Files\Engine\System\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\System\GameScene\GameScene.cpp">
+      <Filter>Source Files\Engine\System\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Entity\EntityList.cpp">
+      <Filter>Source Files\Engine\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Entity\Component\Physics.cpp">
+      <Filter>Source Files\Engine\Entity\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Entity\Component\Mesh.cpp">
+      <Filter>Source Files\Engine\Entity\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,23 +96,8 @@
     <ClInclude Include="Source\Engine\stdafx.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\System\GameSystem.h">
-      <Filter>Source Files\Engine\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\System\InternalSystem.h">
-      <Filter>Source Files\Engine\System</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\Graphics\DirectWrapper.h">
       <Filter>Source Files\Engine\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Graphics\Mesh.h">
-      <Filter>Source Files\Engine\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\GameScene\GameScene.h">
-      <Filter>Source Files\Engine\GameScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\GameScene\GameSceneSystem.h">
-      <Filter>Source Files\Engine\GameScene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Entity\Component\Transform.h">
       <Filter>Source Files\Engine\Entity\Component</Filter>
@@ -128,6 +113,21 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\LeafMath\Vector2D.h">
       <Filter>Source Files\Engine\LeafMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\System\GameScene\GameSceneSystem.h">
+      <Filter>Source Files\Engine\System\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\System\GameScene\GameScene.h">
+      <Filter>Source Files\Engine\System\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Entity\EntityList.h">
+      <Filter>Source Files\Engine\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Entity\Component\Physics.h">
+      <Filter>Source Files\Engine\Entity\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Entity\Component\Mesh.h">
+      <Filter>Source Files\Engine\Entity\Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

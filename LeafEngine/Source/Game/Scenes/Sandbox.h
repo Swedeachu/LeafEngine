@@ -1,23 +1,24 @@
 #ifndef SANDBOX_H
 #define SANDBOX_H
 
-#include "..\..\Engine\GameScene\GameScene.h"
+#include "..\..\Engine\System\GameScene\GameScene.h"
 
 namespace Scenes
 {
 
-	class SandBox : public Engine::GameScene
+	class Sandbox : public GameSystem::GameScene
 	{
 
 	public:
-		SandBox();
 
-		void Start() override;
-		void Restart() override;
-		void Update() override;
+		void Init() override;
 		void Exit() override;
+		void Update(float deltaTime) override;
+		void Render() override;
+
 	};
 
-} // namespace Scenes
+} // Scenes
 
 #endif // SANDBOX_H
+

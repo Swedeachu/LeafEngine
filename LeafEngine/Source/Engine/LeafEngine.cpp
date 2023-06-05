@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "LeafEngine.h"
-#include "GameScene/GameSceneSystem.h"
-#include "System/GameSystem.h"
 #include "Graphics/DirectWrapper.h"
-#include "LeafMath/LeafRandom.h"
 
 namespace Engine
 {
@@ -13,11 +10,14 @@ namespace Engine
 	{
 		totalFrames = 0;
 		windowClassName = L"LeafEngineWindowClassDX";
+		// Initialize the gameSceneSystem
+		gameSceneSystem = GameSystem::GameSceneSystem();
 	}
 
+	// Release any resources
 	LeafEngine::~LeafEngine()
 	{
-		// Release other resources...
+		directWrapper.Release();
 	}
 
 	// stupid hack around to get the windows callback function we want for setting the windows class
@@ -91,18 +91,15 @@ namespace Engine
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&prevTime);
 
-		// init the systems
-		//internalGameSystem.InitSystems();
-
-		// GameSceneSystem sceneSystem = GameSceneSystem();
 		while (true)
 		{
 			// Handle window messages
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
 				if (msg.message == WM_QUIT)
+				{
 					break;
-
+				}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
@@ -116,8 +113,8 @@ namespace Engine
 			// Check if it's time to update the screen
 			if (totalTime >= frameTime)
 			{
-				// update all internal systems
-				//internalGameSystem.UpdateSystems();
+				// update the current frame
+				gameSceneSystem.UpdateScene(frameDeltaTime);
 
 				// render the current frame
 				RenderFrame();
@@ -128,10 +125,16 @@ namespace Engine
 				// Subtract frame time from total time
 				totalTime -= frameTime;
 			}
+
+			// Update frame delta time
+			frameDeltaTime = static_cast<float>(deltaTime * 1000.0); // Convert to milliseconds
 		}
 
-		// exit all systems once out of main loop
-		//internalGameSystem.ExitSystems();
+		// remove all scenes which will effectively free all the entity lists
+		gameSceneSystem.RemoveAllScenes();
+
+		// delete ourselves once out of the main loop
+		delete this;
 
 		return static_cast<int>(msg.wParam);
 	}
@@ -139,23 +142,17 @@ namespace Engine
 	// this function is called in the core loop for handling frames
 	void LeafEngine::RenderFrame()
 	{
-#if defined(_DEBUG)
-		std::cout << "Rendering Frame " << GetTotalFrames() << std::endl;
-#endif
-
 		ID3D11DeviceContext* deviceContext = directWrapper.GetDeviceContext();
 
-		// Clear the render target view with a red color
-		float clearColor[4] = { LeafMath::RandomNumber<float>(0.0f, 1.0f), LeafMath::RandomNumber<float>(0.0f, 1.0f), LeafMath::RandomNumber<float>(0.0f, 1.0f), 1.0f};
-		// float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		// Clear the render target view
+		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		deviceContext->ClearRenderTargetView(directWrapper.GetRenderTargetView(), clearColor);
+
+		// Render all current scene
+		gameSceneSystem.RenderScene();
 
 		// Present the rendered frame
 		directWrapper.Present();
-
-#if defined(_DEBUG)
-		std::cout << "Finished Rendering Frame " << GetTotalFrames() << std::endl;
-#endif
 	}
 
 #pragma region Window properties
@@ -173,6 +170,11 @@ namespace Engine
 	int LeafEngine::GetTotalFrames() const
 	{
 		return totalFrames;
+	}
+
+	float LeafEngine::GetFrameDeltaTime() const
+	{
+		return frameDeltaTime;
 	}
 
 	int LeafEngine::GetWindowWidth() const
@@ -208,5 +210,10 @@ namespace Engine
 	}
 
 #pragma endregion end of window properties
+
+	GameSystem::GameSceneSystem& LeafEngine::GetGameSceneSystem()
+	{
+		return gameSceneSystem;
+	}
 
 } // Engine

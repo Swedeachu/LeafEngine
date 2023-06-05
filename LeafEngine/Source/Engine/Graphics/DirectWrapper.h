@@ -11,6 +11,12 @@ namespace Graphics
 
 	public:
 
+		struct ConstantBufferData
+		{
+			DirectX::XMFLOAT4X4 worldMatrix;
+			DirectX::XMFLOAT4 color;
+		};
+
 		// initing, clearing, presenting frame
 		void InitializeDirectX(HWND hwnd, int width, int height);
 		void ClearRenderTarget();
@@ -21,6 +27,16 @@ namespace Graphics
 		ID3D11DeviceContext* GetDeviceContext() const;
 		IDXGISwapChain* GetSwapChain() const;
 		ID3D11RenderTargetView* GetRenderTargetView() const;
+		ID3D11VertexShader* GetVertexShader() const;
+		ID3D11PixelShader* GetPixelShader() const;
+		ID3DBlob* GetVertexShaderBlob() const;
+		ID3DBlob* GetPixelShaderBlob() const;
+
+		// psuedo deconstructor
+		void Release();
+
+		// Set constant buffer data
+		void SetConstantBufferData(const ConstantBufferData& data);
 
 	private:
 
@@ -33,6 +49,9 @@ namespace Graphics
 		ID3D11PixelShader* pixelShader;
 		ID3DBlob* vertexShaderBlob;
 		ID3DBlob* pixelShaderBlob;
+
+		// Constant buffer
+		ID3D11Buffer* constantBuffer;
 
 		// internal helpers for initing
 		void CreateDeviceAndSwapChain(HWND hwnd, int width, int height);

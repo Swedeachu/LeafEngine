@@ -1,28 +1,46 @@
 #include "SandBox.h"
+#include <iostream>
+
+// Engine includes
+#include "..\..\Engine\LeafMath\Vector2D.h"
+#include "..\..\Engine\System\GameScene\GameSceneSystem.h"
+#include "..\..\Engine\Entity\Entity.h"
+#include "..\..\Engine\Entity\Component\Transform.h"
+#include "..\..\Engine\Entity\Component\Physics.h"
+
+// game includes (this is how we can access our leaf engine instance)
+#include "..\..\Entry.h"
 
 namespace Scenes
 {
 
-	SandBox::SandBox() : GameScene("SandBox") {}
-
-	void SandBox::Start()
+	void Sandbox::Init()
 	{
-		// Add your custom implementation for the SandBox scene's start here
+		std::cout << "starting sandbox scene" << std::endl;
+
+		Entity::Entity testEntity;
+		Component::Transform transform(LeafMath::Vector2D(150, 150), 0, LeafMath::Vector2D(32, 32));
+		testEntity.SetTransform(transform);
+		Component::Physics physics(LeafMath::Vector2D(0, 0), LeafMath::Vector2D(0, 0), 0);
+		testEntity.SetPhysics(physics);
+
+		Entry::engine.GetGameSceneSystem().AddEntityToCurrentScene(testEntity);
 	}
 
-	void SandBox::Restart()
+	void Sandbox::Exit()
 	{
-		// Add your custom implementation for the SandBox scene's restart here
+		std::cout << "exiting sandbox scene" << std::endl;
 	}
 
-	void SandBox::Update()
+	void Sandbox::Update(float deltaTime)
 	{
-		// Add your custom implementation for the SandBox scene's update here
+		std::cout << "updating sandbox scene with dt " << deltaTime << std::endl;
 	}
 
-	void SandBox::Exit()
+	void Sandbox::Render()
 	{
-		// Add your custom implementation for the SandBox scene's exit here
+		std::cout << "rendering sandbox scene" << std::endl;
 	}
 
-} // namespace Scenes
+} // Scenes
+

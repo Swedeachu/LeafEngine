@@ -19,36 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Engine\Entity\Component\Mesh.cpp" />
+    <ClCompile Include="Source\Engine\Entity\Component\Physics.cpp" />
     <ClCompile Include="Source\Engine\Entity\Component\Transform.cpp" />
     <ClCompile Include="Source\Engine\Entity\Entity.cpp" />
-    <ClCompile Include="Source\Engine\GameScene\GameScene.cpp" />
-    <ClCompile Include="Source\Engine\GameScene\GameSceneSystem.cpp" />
+    <ClCompile Include="Source\Engine\Entity\EntityList.cpp" />
     <ClCompile Include="Source\Engine\Graphics\DirectWrapper.cpp" />
-    <ClCompile Include="Source\Engine\Graphics\Mesh.cpp" />
     <ClCompile Include="Source\Engine\LeafEngine.cpp" />
     <ClCompile Include="Source\Engine\LeafMath\LeafRandom.cpp" />
     <ClCompile Include="Source\Engine\LeafMath\Matrix2D.cpp" />
     <ClCompile Include="Source\Engine\LeafMath\Vector2D.cpp" />
     <ClCompile Include="Source\Engine\stdafx.cpp" />
-    <ClCompile Include="Source\Engine\System\GameSystem.cpp" />
-    <ClCompile Include="Source\Engine\System\InternalSystem.cpp" />
+    <ClCompile Include="Source\Engine\System\GameScene\GameScene.cpp" />
+    <ClCompile Include="Source\Engine\System\GameScene\GameSceneSystem.cpp" />
     <ClCompile Include="Source\Game\Scenes\Sandbox.cpp" />
     <ClCompile Include="Source\Entry.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Engine\Entity\Component\Mesh.h" />
+    <ClInclude Include="Source\Engine\Entity\Component\Physics.h" />
     <ClInclude Include="Source\Engine\Entity\Component\Transform.h" />
     <ClInclude Include="Source\Engine\Entity\Entity.h" />
-    <ClInclude Include="Source\Engine\GameScene\GameScene.h" />
-    <ClInclude Include="Source\Engine\GameScene\GameSceneSystem.h" />
+    <ClInclude Include="Source\Engine\Entity\EntityList.h" />
     <ClInclude Include="Source\Engine\Graphics\DirectWrapper.h" />
-    <ClInclude Include="Source\Engine\Graphics\Mesh.h" />
     <ClInclude Include="Source\Engine\LeafEngine.h" />
     <ClInclude Include="Source\Engine\LeafMath\LeafRandom.h" />
     <ClInclude Include="Source\Engine\LeafMath\Matrix2D.h" />
     <ClInclude Include="Source\Engine\LeafMath\Vector2D.h" />
     <ClInclude Include="Source\Engine\stdafx.h" />
-    <ClInclude Include="Source\Engine\System\GameSystem.h" />
-    <ClInclude Include="Source\Engine\System\InternalSystem.h" />
+    <ClInclude Include="Source\Engine\System\GameScene\GameScene.h" />
+    <ClInclude Include="Source\Engine\System\GameScene\GameSceneSystem.h" />
     <ClInclude Include="Source\Entry.h" />
     <ClInclude Include="Source\Game\Scenes\Sandbox.h" />
   </ItemGroup>
