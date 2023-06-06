@@ -3,62 +3,62 @@
 
 #include "Component/Transform.h"
 #include "Component/Physics.h"
-#include "Component/Mesh.h"
+#include "../Graphics/MeshLibrary.h"
 
 using namespace Component;
 
 namespace Entity
 {
 
-  class Entity
-  {
+	class Entity
+	{
 
-  private:
+	private:
 
-    // components
-    Transform transform;
-    Physics physics;
-    Mesh mesh;
+		// components
+		Transform transform;
+		Physics physics;
 
-    bool hasTransform;
-    bool hasPhysics;
-    bool hasMesh;
+		Graphics::MeshType meshType;
 
-  public:
+		bool hasTransform;
+		bool hasPhysics;
 
-    // Constructor
-    Entity();
+	public:
 
-    Entity(const Transform& newTransform, const Physics& newPhysics, const Mesh& newMesh);
+		// Constructor
+		Entity();
 
-    // Destructor
-    ~Entity();
+		Entity(const Transform& newTransform, const Physics& newPhysics, Graphics::MeshType meshType);
 
-    // Get the transform component
-    const Transform& GetTransform();
+		// Destructor
+		~Entity();
 
-    // Set the transform component
-    void SetTransform(const Transform& newTransform);
+		// Get the transform component
+		const Transform& GetTransform();
 
-    // Get the physics component
-    const Physics& GetPhysics();
+		// Set the transform component
+		void SetTransform(const Transform& newTransform);
 
-    // Set the physics component
-    void SetPhysics(const Physics& newPhysics);
+		// Get the physics component
+		const Physics& GetPhysics();
 
-    // Get the mesh component
-    const Mesh& GetMesh();
+		// Set the physics component
+		void SetPhysics(const Physics& newPhysics);
 
-    // Set the mesh component
-    void SetMesh(const Mesh& newMesh);
+		// Get the mesh type
+		Graphics::MeshType GetMeshType() const;
 
-    // Render the entity
-    void EntityRender();
+		// Set the mesh type
+		void SetMeshType(Graphics::MeshType newMeshType);
 
-    // Update the entity
-    void EntityUpdate(float deltaTime);
+		// Render the entity
+		void EntityRender();
 
-  };
+		// Update the entity
+		void EntityUpdate(float deltaTime);
+
+	};
 
 } // Entity
 

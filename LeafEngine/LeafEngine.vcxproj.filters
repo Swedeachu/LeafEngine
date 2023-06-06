@@ -37,9 +37,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Entry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\LeafEngine.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -79,16 +76,22 @@
     <ClCompile Include="Source\Engine\Entity\Component\Physics.cpp">
       <Filter>Source Files\Engine\Entity\Component</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Entity\Component\Mesh.cpp">
-      <Filter>Source Files\Engine\Entity\Component</Filter>
+    <ClCompile Include="Source\Engine\EngineInstance.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Entry.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\Mesh.cpp">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\MeshLibrary.cpp">
+      <Filter>Source Files\Engine\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Game\Scenes\Sandbox.h">
       <Filter>Source Files\Game\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Entry.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\LeafEngine.h">
       <Filter>Source Files\Engine</Filter>
@@ -101,9 +104,6 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Entity\Component\Transform.h">
       <Filter>Source Files\Engine\Entity\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Engine\Entity\Entity.h">
-      <Filter>Source Files\Engine\Entity</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\LeafMath\LeafRandom.h">
       <Filter>Source Files\Engine\LeafMath</Filter>
@@ -126,8 +126,17 @@
     <ClInclude Include="Source\Engine\Entity\Component\Physics.h">
       <Filter>Source Files\Engine\Entity\Component</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Entity\Component\Mesh.h">
-      <Filter>Source Files\Engine\Entity\Component</Filter>
+    <ClInclude Include="Source\Engine\Entity\Entity.h">
+      <Filter>Source Files\Engine\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\EngineInstance.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\Mesh.h">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\MeshLibrary.h">
+      <Filter>Source Files\Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

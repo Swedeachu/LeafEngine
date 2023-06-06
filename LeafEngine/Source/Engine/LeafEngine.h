@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Graphics/DirectWrapper.h"  
+#include "Graphics/MeshLibrary.h"
 #include "System/GameScene/GameSceneSystem.h"
 
 namespace Engine
@@ -12,6 +13,9 @@ namespace Engine
 	{
 
 	public:
+
+		// default constructor that defaults as 60, 300, 300, L"Leaf Engine Game"
+		LeafEngine();
 
 		// create the leaf engine and its window
 		LeafEngine(int fps, int width, int height, const std::wstring& title);
@@ -34,12 +38,23 @@ namespace Engine
 		void SetWindowSize(const int width, const int height);
 
 		// Getters for systems
+		Graphics::DirectWrapper& GetDirectWrapper();
+		Graphics::MeshLibrary& GetMeshLibrary();
 		GameSystem::GameSceneSystem& GetGameSceneSystem();
 
 		// Get the window handle for the engine's instance
 		HWND GetEngineWindowHandle() const;
 
+		// Getter for the window title
+		const std::wstring& GetWindowTitle() const;
+
+		// Setter for the window title
+		void SetWindowTitle(const std::wstring& title);
+
 	private:
+
+		// simply sets the totalFrames and class name and creates the system objects
+		void ShallowInit();
 
 		// window properties
 		int frameRate;
@@ -58,6 +73,7 @@ namespace Engine
 
 		// Systems and required components
 		Graphics::DirectWrapper directWrapper;
+		Graphics::MeshLibrary meshLibrary;
 		GameSystem::GameSceneSystem gameSceneSystem;
 
 		// rendering/frame update

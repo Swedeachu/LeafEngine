@@ -2,6 +2,7 @@
 #define MATRIX2D_H
 
 #include "Vector2D.h"
+#include "..\stdafx.h"
 
 namespace LeafMath
 {
@@ -44,6 +45,9 @@ namespace LeafMath
 
 		// Multiply the matrix by a vector and return the resulting vector
 		Vector2D MultiplyVector(const Vector2D& vec) const;
+
+		// Get the matrix as a directX 4x4
+		DirectX::XMFLOAT4X4 ToDirectXMatrix() const;
 
 	private:
 		float m[4][4];

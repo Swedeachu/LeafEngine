@@ -2,14 +2,14 @@
 #include <iostream>
 
 // Engine includes
-#include "..\..\Engine\LeafMath\Vector2D.h"
 #include "..\..\Engine\System\GameScene\GameSceneSystem.h"
+#include "..\..\Engine\LeafMath\Vector2D.h"
 #include "..\..\Engine\Entity\Entity.h"
 #include "..\..\Engine\Entity\Component\Transform.h"
 #include "..\..\Engine\Entity\Component\Physics.h"
 
-// game includes (this is how we can access our leaf engine instance)
-#include "..\..\Entry.h"
+// this is how we can access our leaf engine instance
+#include "..\..\Engine\EngineInstance.h"
 
 namespace Scenes
 {
@@ -24,7 +24,7 @@ namespace Scenes
 		Component::Physics physics(LeafMath::Vector2D(0, 0), LeafMath::Vector2D(0, 0), 0);
 		testEntity.SetPhysics(physics);
 
-		Entry::engine.GetGameSceneSystem().AddEntityToCurrentScene(testEntity);
+		Engine::EngineInstance.GetGameSceneSystem().AddEntityToCurrentScene(testEntity);
 	}
 
 	void Sandbox::Exit()

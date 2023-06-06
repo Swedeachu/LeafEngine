@@ -1,11 +1,17 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "..\..\LeafMath\Vector2D.h"
-#include "..\..\Graphics\DirectWrapper.h"
+#include "DirectWrapper.h"
 
-namespace Component
+namespace Graphics
 {
+
+	struct Vertex
+	{
+		DirectX::XMFLOAT2 position;
+		DirectX::XMFLOAT4 color;
+		DirectX::XMFLOAT2 tex;
+	};
 
 	class Mesh
 	{
@@ -15,8 +21,10 @@ namespace Component
 		Mesh();
 		~Mesh();
 
-		void Initialize(Graphics::DirectWrapper& directWrapper, const DirectX::XMFLOAT2* vertices, UINT vertexCount);
+		void Initialize(Graphics::DirectWrapper& directWrapper, const Vertex* vertices, UINT vertexCount);
 		void Draw(Graphics::DirectWrapper& directWrapper);
+
+		static Mesh CreateQuad(Graphics::DirectWrapper& directWrapper, const DirectX::XMFLOAT2& size);
 
 	private:
 
@@ -31,6 +39,6 @@ namespace Component
 
 	};
 
-} // Component
+} // Graphics
 
 #endif // MESH_H

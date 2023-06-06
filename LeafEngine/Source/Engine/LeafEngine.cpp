@@ -5,18 +5,34 @@
 namespace Engine
 {
 
-	// construct an instance of the leaf engine
+	// default constructor that defaults as 60, 300, 300, L"default"
+	LeafEngine::LeafEngine() : frameRate(60), windowWidth(300), windowHeight(300), windowTitle(L"Leaf Engine Game")
+	{
+		ShallowInit();
+	}
+
+	// construct an instance of the leaf engine with a set fps, window width and height, and a title
 	LeafEngine::LeafEngine(int fps, int width, int height, const std::wstring& title) : frameRate(fps), windowWidth(width), windowHeight(height), windowTitle(title)
+	{
+		ShallowInit();
+	}
+
+	// simply sets the totalFrames and class name and creates the system objects
+	void LeafEngine::ShallowInit()
 	{
 		totalFrames = 0;
 		windowClassName = L"LeafEngineWindowClassDX";
-		// Initialize the gameSceneSystem
+		// Create the systems
 		gameSceneSystem = GameSystem::GameSceneSystem();
+		meshLibrary = Graphics::MeshLibrary();
 	}
 
 	// Release any resources
 	LeafEngine::~LeafEngine()
 	{
+		// remove all scenes which will effectively free all the entity lists
+		gameSceneSystem.RemoveAllScenes();
+		// release the directX wrapper and its objects
 		directWrapper.Release();
 	}
 
@@ -73,8 +89,10 @@ namespace Engine
 			return 1; // error if the handle isn't made correctly
 		}
 
-		// Set up the DirectX device and other needed things on the LeafEngine instance
+		// Set up the DirectX device and other needed things on the LeafEngine instance now that we are actually started
 		this->directWrapper.InitializeDirectX(engineWindowHandle, windowWidth, windowHeight);
+		// then we can init the mesh library
+		meshLibrary.InitMeshLibrary();
 
 		// Show the window
 		ShowWindow(engineWindowHandle, SW_SHOW);
@@ -129,9 +147,6 @@ namespace Engine
 			// Update frame delta time
 			frameDeltaTime = static_cast<float>(deltaTime * 1000.0); // Convert to milliseconds
 		}
-
-		// remove all scenes which will effectively free all the entity lists
-		gameSceneSystem.RemoveAllScenes();
 
 		// delete ourselves once out of the main loop
 		delete this;
@@ -209,11 +224,41 @@ namespace Engine
 		return engineWindowHandle;
 	}
 
+	// Getter for the window title
+	const std::wstring& LeafEngine::GetWindowTitle() const
+	{
+		return windowTitle;
+	}
+
+	// Setter for the window title
+	void LeafEngine::SetWindowTitle(const std::wstring& title)
+	{
+		windowTitle = title;
+		if (engineWindowHandle != nullptr)
+		{
+			SetWindowText(engineWindowHandle, windowTitle.c_str());
+		}
+	}
+
 #pragma endregion end of window properties
+
+#pragma region Getters for engine systems and major components
+
+	Graphics::DirectWrapper& LeafEngine::GetDirectWrapper()
+	{
+		return directWrapper;
+	}
+
+	Graphics::MeshLibrary& LeafEngine::GetMeshLibrary()
+	{
+		return meshLibrary;
+	}
 
 	GameSystem::GameSceneSystem& LeafEngine::GetGameSceneSystem()
 	{
 		return gameSceneSystem;
 	}
+
+#pragma endregion End of getters for engine systems and major components
 
 } // Engine
