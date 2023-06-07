@@ -88,6 +88,9 @@
     <ClCompile Include="Source\Engine\Graphics\MeshLibrary.cpp">
       <Filter>Source Files\Engine\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\Camera.cpp">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Game\Scenes\Sandbox.h">
@@ -136,6 +139,9 @@
       <Filter>Source Files\Engine\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Graphics\MeshLibrary.h">
+      <Filter>Source Files\Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\Camera.h">
       <Filter>Source Files\Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>

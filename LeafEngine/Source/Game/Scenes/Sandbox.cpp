@@ -18,13 +18,17 @@ namespace Scenes
 	{
 		std::cout << "starting sandbox scene" << std::endl;
 
-		Entity::Entity testEntity;
+		// make a pointer to the test entity to dynamically allocate it
+		Entity::Entity* testEntity = new Entity::Entity();
 		Component::Transform transform(LeafMath::Vector2D(150, 150), 0, LeafMath::Vector2D(32, 32));
-		testEntity.SetTransform(transform);
+		testEntity->SetTransform(transform);
 		Component::Physics physics(LeafMath::Vector2D(0, 0), LeafMath::Vector2D(0, 0), 0);
-		testEntity.SetPhysics(physics);
+		testEntity->SetPhysics(physics);
 
-		Engine::EngineInstance.GetGameSceneSystem().AddEntityToCurrentScene(testEntity);
+		Engine::EngineInstance.GetGameSceneSystem().AddEntityToCurrentScene(*testEntity);
+
+		// Modify the camera's position
+		Engine::EngineInstance.GetCamera().SetPosition(150, 150);
 	}
 
 	void Sandbox::Exit()

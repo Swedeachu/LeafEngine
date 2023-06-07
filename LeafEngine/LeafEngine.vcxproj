@@ -24,6 +24,7 @@
     <ClCompile Include="Source\Engine\Entity\Component\Transform.cpp" />
     <ClCompile Include="Source\Engine\Entity\Entity.cpp" />
     <ClCompile Include="Source\Engine\Entity\EntityList.cpp" />
+    <ClCompile Include="Source\Engine\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Engine\Graphics\DirectWrapper.cpp" />
     <ClCompile Include="Source\Engine\Graphics\Mesh.cpp" />
     <ClCompile Include="Source\Engine\Graphics\MeshLibrary.cpp" />
@@ -43,6 +44,7 @@
     <ClInclude Include="Source\Engine\Entity\Component\Transform.h" />
     <ClInclude Include="Source\Engine\Entity\Entity.h" />
     <ClInclude Include="Source\Engine\Entity\EntityList.h" />
+    <ClInclude Include="Source\Engine\Graphics\Camera.h" />
     <ClInclude Include="Source\Engine\Graphics\DirectWrapper.h" />
     <ClInclude Include="Source\Engine\Graphics\Mesh.h" />
     <ClInclude Include="Source\Engine\Graphics\MeshLibrary.h" />

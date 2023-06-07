@@ -13,8 +13,12 @@ namespace Graphics
 
     struct ConstantBufferData
     {
-      DirectX::XMFLOAT4X4 worldMatrix;
-      DirectX::XMFLOAT4 color;
+      DirectX::XMFLOAT4X4 worldViewProjection;
+      DirectX::XMFLOAT4X4 transform;
+      DirectX::XMFLOAT4 tintColor;
+      DirectX::XMFLOAT2 texOffset;
+      float alpha;
+      float padding;
     };
 
     // initing, clearing, presenting frame
@@ -41,6 +45,9 @@ namespace Graphics
     // Get constant buffer
     ID3D11Buffer* GetConstantBuffer() const;
 
+    // Get input layout
+    ID3D11InputLayout* GetInputLayout() const;
+
   private:
 
     // essential objects
@@ -55,6 +62,9 @@ namespace Graphics
 
     // Constant buffer
     ID3D11Buffer* constantBuffer;
+
+    // Input layout
+    ID3D11InputLayout* inputLayout;
 
     // internal helpers for initing
     void CreateDeviceAndSwapChain(HWND hwnd, int width, int height);

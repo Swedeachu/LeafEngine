@@ -30,6 +30,11 @@ namespace Graphics
     deviceContext->Release();
     device->Release();
     constantBuffer->Release();
+    if (inputLayout)
+    {
+      inputLayout->Release();
+      inputLayout = nullptr;
+    }
   }
 
   void DirectWrapper::SetConstantBufferData(const ConstantBufferData& data)
@@ -42,6 +47,11 @@ namespace Graphics
   ID3D11Buffer* DirectWrapper::GetConstantBuffer() const
   {
     return constantBuffer;
+  }
+
+  ID3D11InputLayout* DirectWrapper::GetInputLayout() const
+  {
+    return inputLayout;
   }
 
   void DirectWrapper::CreateDeviceAndSwapChain(HWND hwnd, int width, int height)
@@ -133,6 +143,24 @@ namespace Graphics
     {
       throw std::runtime_error("Failed to create vertex shader. HRESULT: " + std::to_string(hr));
     }
+
+    // Define the vertex input layout
+    D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+    {
+      { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "TEX", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+
+    // Create the input layout
+    hr = device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+    if (FAILED(hr))
+    {
+      throw std::runtime_error("Failed to create input layout. HRESULT: " + std::to_string(hr));
+    }
+
+    // Set the input layout to the device context
+    deviceContext->IASetInputLayout(inputLayout);
 
     // Load the pixel shader
     hr = D3DReadFileToBlob(pixelShaderPath.c_str(), &pixelShaderBlob);

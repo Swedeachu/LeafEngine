@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Graphics/DirectWrapper.h"  
 #include "Graphics/MeshLibrary.h"
+#include "Graphics/Camera.h"
 #include "System/GameScene/GameSceneSystem.h"
 
 namespace Engine
@@ -40,6 +41,7 @@ namespace Engine
 		// Getters for systems
 		Graphics::DirectWrapper& GetDirectWrapper();
 		Graphics::MeshLibrary& GetMeshLibrary();
+		Graphics::Camera& GetCamera();
 		GameSystem::GameSceneSystem& GetGameSceneSystem();
 
 		// Get the window handle for the engine's instance
@@ -74,6 +76,7 @@ namespace Engine
 		// Systems and required components
 		Graphics::DirectWrapper directWrapper;
 		Graphics::MeshLibrary meshLibrary;
+		Graphics::Camera camera;
 		GameSystem::GameSceneSystem gameSceneSystem;
 
 		// rendering/frame update

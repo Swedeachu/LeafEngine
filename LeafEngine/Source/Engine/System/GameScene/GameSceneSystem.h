@@ -17,16 +17,14 @@ namespace GameSystem
 	public:
 
 		// Entity Management
-		void AddEntityToScene(const std::string& sceneName, const Entity::Entity& entity, int zLayer);
-		void AddEntityToScene(const std::string& sceneName, const Entity::Entity& entity);
-		void AddEntityToCurrentScene(const Entity::Entity& entity, int zLayer);
-		void AddEntityToCurrentScene(const Entity::Entity& entity);
+		void AddEntityToScene(const std::string& sceneName, const Entity::Entity& entity, int zLayer = 1);
+		void AddEntityToCurrentScene(const Entity::Entity& entity, int zLayer = 1);
 
 		// Scene Management
 		void AddScene(const std::string& name, GameScene* scene);
 		void RemoveScene(const std::string& name);
-		void SetCurrentScene(const std::string& name);
-		void RestartCurrentScene();
+		void SetCurrentScene(const std::string& name, bool exitOldScene, bool restartNewScene);
+		void RestartCurrentScene(bool callExitFunction = false);
 
 		// Engine handles these calls
 		void InitScene();

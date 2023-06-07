@@ -6,9 +6,12 @@
 
 namespace LeafMath
 {
+
 	class Matrix2D
 	{
+
 	public:
+
 		// Constructors
 		Matrix2D();
 		Matrix2D(const Matrix2D& other);
@@ -51,6 +54,7 @@ namespace LeafMath
 
 	private:
 		float m[4][4];
+
 	};
 
 } // LeafMath

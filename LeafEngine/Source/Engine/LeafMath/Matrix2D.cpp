@@ -176,30 +176,30 @@ namespace LeafMath
 		return result;
 	}
 
-	// Get the matrix as a directX 4x4
+	// Get the matrix as a DirectX 4x4
 	DirectX::XMFLOAT4X4 Matrix2D::ToDirectXMatrix() const
 	{
 		DirectX::XMFLOAT4X4 directMatrix;
 
-		directMatrix._11 = m[0][0];
-		directMatrix._12 = m[0][1];
-		directMatrix._13 = 0.0f;
-		directMatrix._14 = 0.0f;
+		directMatrix._11 = m[0][0]; // r
+		directMatrix._12 = m[0][1]; // r
+		directMatrix._13 = 0.0f;    // Unused
+		directMatrix._14 = 0.0f;    // Unused
 
-		directMatrix._21 = m[1][0];
-		directMatrix._22 = m[1][1];
-		directMatrix._23 = 0.0f;
-		directMatrix._24 = 0.0f;
+		directMatrix._21 = m[1][0]; // r
+		directMatrix._22 = m[1][1]; // r
+		directMatrix._23 = 0.0f;    // Unused
+		directMatrix._24 = 0.0f;    // Unused
 
-		directMatrix._31 = 0.0f;
-		directMatrix._32 = 0.0f;
-		directMatrix._33 = 1.0f;
-		directMatrix._34 = 0.0f;
+		directMatrix._31 = 0.0f;    // Unused
+		directMatrix._32 = 0.0f;    // Unused
+		directMatrix._33 = 1.0f;    // Unused
+		directMatrix._34 = 0.0f;    // Unused
 
-		directMatrix._41 = m[2][0];
-		directMatrix._42 = m[2][1];
-		directMatrix._43 = 0.0f;
-		directMatrix._44 = 1.0f;
+		directMatrix._41 = m[0][3]; // x (Translate X)
+		directMatrix._42 = m[1][3]; // y (Translate Y)
+		directMatrix._43 = 0.0f;    // Unused
+		directMatrix._44 = 1.0f;    // For homogeneous coordinates
 
 		return directMatrix;
 	}

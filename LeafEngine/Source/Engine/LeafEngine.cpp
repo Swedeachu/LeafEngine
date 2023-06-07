@@ -93,6 +93,8 @@ namespace Engine
 		this->directWrapper.InitializeDirectX(engineWindowHandle, windowWidth, windowHeight);
 		// then we can init the mesh library
 		meshLibrary.InitMeshLibrary();
+		// then set up the camera at (0, 0)
+		camera = Graphics::Camera(0, 0); // constructed with default zoom of 1.0
 
 		// Show the window
 		ShowWindow(engineWindowHandle, SW_SHOW);
@@ -252,6 +254,11 @@ namespace Engine
 	Graphics::MeshLibrary& LeafEngine::GetMeshLibrary()
 	{
 		return meshLibrary;
+	}
+
+	Graphics::Camera& LeafEngine::GetCamera()
+	{
+		return camera;
 	}
 
 	GameSystem::GameSceneSystem& LeafEngine::GetGameSceneSystem()

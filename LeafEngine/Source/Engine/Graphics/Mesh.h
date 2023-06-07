@@ -6,38 +6,34 @@
 namespace Graphics
 {
 
-	struct Vertex
-	{
-		DirectX::XMFLOAT2 position;
-		DirectX::XMFLOAT4 color;
-		DirectX::XMFLOAT2 tex;
-	};
+  struct Vertex
+  {
+    DirectX::XMFLOAT2 position;
+    DirectX::XMFLOAT4 color;
+    DirectX::XMFLOAT2 texCoord;
+  };
 
-	class Mesh
-	{
+  class Mesh
+  {
 
-	public:
+  public:
 
-		Mesh();
-		~Mesh();
+    Mesh();
+    ~Mesh();
 
-		void Initialize(Graphics::DirectWrapper& directWrapper, const Vertex* vertices, UINT vertexCount);
-		void Draw(Graphics::DirectWrapper& directWrapper);
+    void Initialize(Graphics::DirectWrapper& directWrapper, const Vertex* vertices, UINT vertexCount);
+    void Draw(Graphics::DirectWrapper& directWrapper);
 
-		static Mesh CreateQuad(Graphics::DirectWrapper& directWrapper, const DirectX::XMFLOAT2& size);
+    static Mesh CreateQuad(Graphics::DirectWrapper& directWrapper, const DirectX::XMFLOAT2& size);
 
-	private:
+  private:
 
-		ID3D11Buffer* vertexBuffer;
-		UINT vertexCount;
-		UINT stride;
-		UINT offset;
-		ID3D11InputLayout* inputLayout;
-		ID3D11VertexShader* vertexShader;
-		ID3D11PixelShader* pixelShader;
-		ID3D11Buffer* constantBuffer;
+    ID3D11Buffer* vertexBuffer;
+    UINT vertexCount;
+    UINT stride;
+    UINT offset;
 
-	};
+  };
 
 } // Graphics
 

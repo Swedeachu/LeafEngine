@@ -5,7 +5,7 @@ namespace GameSystem
 
 #pragma region Adding Entities to scene
 
-	// Add an entity to the specified scene with an optional z-layer parameter
+	// Add an entity to the specified scene with an optional z-layer parameter (default zLayer is 1)
 	void GameSceneSystem::AddEntityToScene(const std::string& sceneName, const Entity::Entity& entity, int zLayer)
 	{
 		if (scenes.find(sceneName) != scenes.end())
@@ -14,25 +14,10 @@ namespace GameSystem
 		}
 	}
 
-	// Add an entity to the specified scene with a default z-layer value of 1
-	void GameSceneSystem::AddEntityToScene(const std::string& sceneName, const Entity::Entity& entity)
-	{
-		if (scenes.find(sceneName) != scenes.end())
-		{
-			entityLists[sceneName].AddEntity(1, entity); // Default zLayer value of 1
-		}
-	}
-
-	// Add an entity to the current scene with an optional z-layer parameter
+	// Add an entity to the current scene with an optional z-layer parameter (default zLayer is 1)
 	void GameSceneSystem::AddEntityToCurrentScene(const Entity::Entity& entity, int zLayer)
 	{
 		AddEntityToScene(currentSceneName, entity, zLayer);
-	}
-
-	// Add an entity to the current scene with a default z-layer of 1
-	void GameSceneSystem::AddEntityToCurrentScene(const Entity::Entity& entity)
-	{
-		AddEntityToScene(currentSceneName, entity, 1); // Default zLayer value of 1
 	}
 
 #pragma endregion End of adding entities to scene
@@ -52,19 +37,28 @@ namespace GameSystem
 		scenes.erase(name);
 	}
 
-	// Set the current scene by name, this calls the old current scene's exit function and then the new current scene's init function immediately
-	void GameSceneSystem::SetCurrentScene(const std::string& name)
+	// Set the current scene by name
+	// exitOldScene determines if the old scenes exit function should be called on switching
+	// restartNewScene determines if the new scenes init function should be called on switching
+	// these booleans determine how you want your scene swapping to behave, if it is just a literal swap or has full scene memory resets involved
+	void GameSceneSystem::SetCurrentScene(const std::string& name, bool exitOldScene, bool restartNewScene)
 	{
 		auto it = scenes.find(name);
 		if (it != scenes.end())
 		{
 			if (currentScene != nullptr)
 			{
-				currentScene->Exit();
+				if (exitOldScene)
+				{
+					currentScene->Exit();
+				}
 			}
 			currentSceneName = name;
 			currentScene = it->second.get();
-			currentScene->Init();
+			if (restartNewScene)
+			{
+				currentScene->Init();
+			}
 		}
 	}
 
@@ -77,7 +71,7 @@ namespace GameSystem
 		}
 	}
 
-	// Free's all Entities in a scene and calls the curernt scenes exit function
+	// Calls the curernt scenes exit function
 	void GameSceneSystem::ExitScene()
 	{
 		if (currentScene != nullptr)
@@ -91,8 +85,7 @@ namespace GameSystem
 	{
 		if (currentScene != nullptr)
 		{
-			Entity::EntityList& entityList = entityLists[currentSceneName];
-			entityList.UpdateEntities(deltaTime);
+			entityLists[currentSceneName].UpdateEntities(deltaTime);
 			currentScene->Update(deltaTime);
 		}
 	}
@@ -102,18 +95,21 @@ namespace GameSystem
 	{
 		if (currentScene != nullptr)
 		{
-			Entity::EntityList& entityList = entityLists[currentSceneName];
-			entityList.RenderEntities();
+			entityLists[currentSceneName].RenderEntities();
 			currentScene->Render();
 		}
 	}
 
-	// Calls the current scene's exit function, then instantly calls it's init function
-	void GameSceneSystem::RestartCurrentScene()
+	// callExitFunction determines if this calls the current scene's exit function, then instantly calls it's init function
+	// Otherwise this only calls the init function again after clearing the entity list
+	void GameSceneSystem::RestartCurrentScene(bool callExitFunction)
 	{
 		if (currentScene != nullptr)
 		{
-			currentScene->Exit();
+			if (callExitFunction)
+			{
+				currentScene->Exit();
+			}
 			currentScene->Init();
 		}
 	}
@@ -131,6 +127,5 @@ namespace GameSystem
 		currentScene = nullptr;
 		currentSceneName.clear();
 	}
-
 
 } // GameSystem
