@@ -1,36 +1,49 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "DirectXMath.h"
+#include "..\stdafx.h"
 #include "..\LeafMath\Vector2D.h"
 
 namespace Graphics
 {
 
-  class Camera
-  {
+	class Camera
+	{
 
-  public:
+	public:
 
-    Camera(float x = 0.0f, float y = 0.0f, float zoom = 1.0f);
+		void InitCamera(HWND hwnd);
 
-    void SetPosition(float x, float y);
-    LeafMath::Vector2D GetPosition() const;
+		void SetPosition(float x, float y);
+		LeafMath::Vector2D GetPosition() const;
 
-    void SetZoom(float zoom);
-    float GetZoom() const;
+		float GetZoom() const;
+		void SetZoom(float zoom);
 
-    DirectX::XMFLOAT4X4 GetViewMatrix();
-    DirectX::XMFLOAT4X4 GetProjectionMatrix();
+		void ResetWindowSize();
 
-    LeafMath::Vector2D ScreenPosToWorldPos(const LeafMath::Vector2D& screenPos);
+		DirectX::XMFLOAT4X4 GetWorldMatrix();
 
-  private:
+		LeafMath::Vector2D ScreenPosToWorldPos(const LeafMath::Vector2D& screenPos);
 
-    LeafMath::Vector2D position;
-    float zoom;
+	private:
 
-  };
+		LeafMath::Vector2D position{ 0.0f, 0.0f };
+		LeafMath::Vector2D windowSize{ 0.0f, 0.0f };
+
+		float cameraZ{ 0.0f };
+		float scale{ 0.0f };
+
+		DirectX::XMMATRIX viewProjectionMatrix{
+				0.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 0.0f
+		};;
+
+		HWND sharedWindowHandle{ nullptr };
+
+	};
 
 } // Graphics
 

@@ -8,6 +8,7 @@ namespace Engine
 	// default constructor that defaults as 60, 300, 300, L"default"
 	LeafEngine::LeafEngine() : frameRate(60), windowWidth(300), windowHeight(300), windowTitle(L"Leaf Engine Game")
 	{
+		resizing = false;
 		ShallowInit();
 	}
 
@@ -25,6 +26,7 @@ namespace Engine
 		// Create the systems
 		gameSceneSystem = GameSystem::GameSceneSystem();
 		meshLibrary = Graphics::MeshLibrary();
+		inputHandler = Input::InputHandler();
 	}
 
 	// Release any resources
@@ -33,14 +35,24 @@ namespace Engine
 		// remove all scenes which will effectively free all the entity lists
 		gameSceneSystem.RemoveAllScenes();
 		// release the directX wrapper and its objects
-		directWrapper.Release();
+		directWrapper.ReleaseDirectX();
 	}
 
-	// stupid hack around to get the windows callback function we want for setting the windows class
+	// stupid hack around to get the windows callback function we want for setting the windows class, 
+	// as well as getting the window to know it was created by LeafEngine
 	LRESULT CALLBACK LeafEngine::StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		// Retrieve the pointer to the LeafEngine instance
 		LeafEngine* enginePtr = reinterpret_cast<LeafEngine*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+		if (uMsg == WM_CREATE)
+		{
+			// Set the GWLP_USERDATA value to the LeafEngine instance when the window is created
+			CREATESTRUCT* createStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
+			enginePtr = reinterpret_cast<LeafEngine*>(createStruct->lpCreateParams);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(enginePtr));
+		}
+
 		// Call the non-static member function for window procedure
 		return enginePtr->WindowProc(hwnd, uMsg, wParam, lParam);
 	}
@@ -50,13 +62,120 @@ namespace Engine
 	{
 		switch (uMsg)
 		{
+			// destroy handling ---------------------------------------------------------------
 			case WM_DESTROY:
 				PostQuitMessage(0);
 				return 0;
+				// move handling ----------------------------------------------------------------
+			case WM_MOVE:
+				InvalidateRect(hwnd, NULL, FALSE); // force redraw
+				break;
+				// size handling ----------------------------------------------------------------
+			case WM_SIZE:
+				if (wParam == SIZE_MAXIMIZED)
+				{
+					camera.ResetWindowSize();
+				}
+				if (wParam == SIZE_RESTORED && !resizing)
+				{
+					camera.ResetWindowSize();
+				}
+				break;
+			case WM_SIZING:
+				resizing = true;
+				break;
+			case WM_EXITSIZEMOVE:
+				if (resizing)
+				{
+					camera.ResetWindowSize();
+				}
+				resizing = false;
+				break;
+				// Input handling from here ------------------------------------------------------
+			case WM_KEYDOWN:
+				inputHandler.KeySetState((unsigned char)wParam, true);
+				break;
+			case WM_KEYUP:
+				inputHandler.KeySetState((unsigned char)wParam, false);
+				break;
+			case WM_SYSKEYDOWN:
+				if (wParam == VK_F10)
+				{
+					inputHandler.KeySetState(VK_F10, true);
+				}
+				break;
+			case WM_SYSKEYUP:
+				if (wParam == VK_F10)
+				{
+					inputHandler.KeySetState(VK_F10, false);
+				}
+				break;
+			case WM_MOUSEWHEEL:
+				inputHandler.SetMouseScrollDelta(GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
+				break;
+			case WM_LBUTTONDOWN:
+				inputHandler.KeySetState(VK_LBUTTON, true);
+				break;
+			case WM_LBUTTONUP:
+				inputHandler.KeySetState(VK_LBUTTON, false);
+				break;
+			case WM_RBUTTONDOWN:
+				inputHandler.KeySetState(VK_RBUTTON, true);
+				break;
+			case WM_RBUTTONUP:
+				inputHandler.KeySetState(VK_RBUTTON, false);
+				break;
+			case WM_MBUTTONDOWN:
+				inputHandler.KeySetState(VK_MBUTTON, true);
+				break;
+			case WM_MBUTTONUP:
+				inputHandler.KeySetState(VK_MBUTTON, false);
+				break;
 		}
 
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
+
+#pragma region Input Handling Wrapper
+
+	// must be upper cased when using chars!!!
+	bool LeafEngine::InputKeyDown(char key)
+	{
+		return inputHandler.IsKeyDown(key);
+	}
+
+	// must be upper cased when using chars!!!
+	bool LeafEngine::InputKeyTriggered(char key)
+	{
+		return inputHandler.IsKeyTriggered(key);
+	}
+
+	// must be upper cased when using chars!!!
+	bool LeafEngine::InputKeyReleased(char key)
+	{
+		return inputHandler.IsKeyReleased(key);
+	}
+
+	const LeafMath::Vector2D& LeafEngine::GetMousePosition() const
+	{
+		return inputHandler.GetMousePosition();
+	}
+
+	const LeafMath::Vector2D& LeafEngine::GetMousePositionDelta() const
+	{
+		return inputHandler.GetMousePositionDelta();
+	}
+
+	void LeafEngine::ShowMouseCursor(bool show)
+	{
+		int count = show ? 1 : -1;
+		while (count != 0)
+		{
+			count = show ? ShowCursor(TRUE) : ShowCursor(FALSE);
+		}
+	}
+
+#pragma endregion End input handling
 
 	// runs the leaf engine at the set frame rate for the created window the engine was assigned to
 	int LeafEngine::Run()
@@ -81,7 +200,7 @@ namespace Engine
 			nullptr,
 			nullptr,
 			hInstance,
-			nullptr
+			this // Set the GWLP_USERDATA to the LeafEngine instance
 		);
 
 		if (engineWindowHandle == nullptr)
@@ -89,15 +208,16 @@ namespace Engine
 			return 1; // error if the handle isn't made correctly
 		}
 
+		// first set up the camera
+		camera.InitCamera(engineWindowHandle);
 		// Set up the DirectX device and other needed things on the LeafEngine instance now that we are actually started
 		this->directWrapper.InitializeDirectX(engineWindowHandle, windowWidth, windowHeight);
 		// then we can init the mesh library
 		meshLibrary.InitMeshLibrary();
-		// then set up the camera at (0, 0)
-		camera = Graphics::Camera(0, 0); // constructed with default zoom of 1.0
 
-		// Show the window
+		// Show and update the window
 		ShowWindow(engineWindowHandle, SW_SHOW);
+		UpdateWindow(engineWindowHandle);
 
 		// Calculate the desired frame time
 		const double frameTime = 1.0 / frameRate;
@@ -113,6 +233,9 @@ namespace Engine
 
 		while (true)
 		{
+			// read inputs
+			inputHandler.InputUpdate();
+
 			// Handle window messages
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
@@ -159,17 +282,14 @@ namespace Engine
 	// this function is called in the core loop for handling frames
 	void LeafEngine::RenderFrame()
 	{
-		ID3D11DeviceContext* deviceContext = directWrapper.GetDeviceContext();
+		// Begin current frame
+		directWrapper.BeginFrame();
 
-		// Clear the render target view
-		float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		deviceContext->ClearRenderTargetView(directWrapper.GetRenderTargetView(), clearColor);
-
-		// Render all current scene
+		// Render current scene
 		gameSceneSystem.RenderScene();
 
-		// Present the rendered frame
-		directWrapper.Present();
+		// End current frame
+		directWrapper.EndFrame();
 	}
 
 #pragma region Window properties
@@ -224,6 +344,12 @@ namespace Engine
 	HWND LeafEngine::GetEngineWindowHandle() const
 	{
 		return engineWindowHandle;
+	}
+
+	// check if the window is currently focused
+	bool LeafEngine::IsActiveWindow() const
+	{
+		return GetActiveWindow() == engineWindowHandle;
 	}
 
 	// Getter for the window title

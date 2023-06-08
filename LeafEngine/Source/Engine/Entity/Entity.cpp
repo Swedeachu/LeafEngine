@@ -10,10 +10,10 @@ namespace Entity
 	{
 		hasTransform = false;
 		hasPhysics = false;
-		meshType = Graphics::QuadMesh;
+		meshTypeName = "QuadMesh";
 	}
 
-	Entity::Entity(const Transform& newTransform, const Physics& newPhysics, Graphics::MeshType meshType) : transform(newTransform), physics(newPhysics), meshType(meshType)
+	Entity::Entity(const Transform& newTransform, const Physics& newPhysics, std::string meshTypeName) : transform(newTransform), physics(newPhysics), meshTypeName(meshTypeName)
 	{
 		hasTransform = true;
 		hasPhysics = true;
@@ -50,15 +50,15 @@ namespace Entity
 	}
 
 	// Get the type of mesh the Entity will be rendered with
-	Graphics::MeshType Entity::GetMeshType() const
+	std::string Entity::GetMeshType() const
 	{
-		return meshType;
+		return meshTypeName;
 	}
 
 	// Set the type of mesh the Entity will be rendered with
-	void Entity::SetMeshType(Graphics::MeshType newMeshType)
+	void Entity::SetMeshType(std::string newMeshType)
 	{
-		meshType = newMeshType;
+		meshTypeName = newMeshType;
 	}
 
 	// Render the entity
@@ -66,50 +66,28 @@ namespace Entity
 	{
 		if (hasTransform)
 		{
-			// Get the transform component
-			const Transform& entityTransform = GetTransform();
-
-			// Get the transformation matrix from the transform component
-			const LeafMath::Matrix2D& transformMatrix = entityTransform.GetMatrix();
-
-			// convert it into a directX matrix
-			DirectX::XMFLOAT4X4 worldMatrix = transformMatrix.ToDirectXMatrix();
-
-			// Get the camera
-			Graphics::Camera& camera = Engine::EngineInstance.GetCamera();
-
-			// Get the view and projection matrices
-			DirectX::XMFLOAT4X4 viewMatrix = camera.GetViewMatrix();
-			DirectX::XMFLOAT4X4 projectionMatrix = camera.GetProjectionMatrix();
-
-			// Create the worldViewProjection matrix
-			DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&worldMatrix);
-			DirectX::XMMATRIX view = DirectX::XMLoadFloat4x4(&viewMatrix);
-			DirectX::XMMATRIX projection = DirectX::XMLoadFloat4x4(&projectionMatrix);
-			DirectX::XMMATRIX worldViewProjection = world * view * projection;
-
-			DirectX::XMFLOAT4X4 wvp;
-			DirectX::XMStoreFloat4x4(&wvp, worldViewProjection);
-
-			// setup constant buffer
-			Graphics::DirectWrapper::ConstantBufferData cbData;
-			cbData.worldViewProjection = wvp;
-			cbData.transform = worldMatrix;
-			cbData.tintColor = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f); // no tint for now
-			cbData.texOffset = DirectX::XMFLOAT2(0.0f, 0.0f);
-			cbData.alpha = 1.0f;
-
-			// Get the DirectWrapper instance
+			// Get our graphics wrapper
 			Graphics::DirectWrapper& directWrapper = Engine::EngineInstance.GetDirectWrapper();
 
-			// Set the constant buffer data in the direct wrappers constant buffer
-			directWrapper.SetConstantBufferData(cbData);
+			// Get the transform component
+			const Transform& entityTransform = GetTransform();
+			// Get the transformation matrix from the transform component
+			const LeafMath::Matrix2D& transformMatrix = entityTransform.GetMatrix();
+			// Convert it into a directX matrix
+			DirectX::XMFLOAT4X4 worldMatrix = transformMatrix.ToDirectXMatrix();
+			// set the transform data for rendering the mesh
+			directWrapper.SetConstantBufferTransform(&worldMatrix);
 
-			// Get the mesh object
-			Graphics::Mesh meshObj = Engine::EngineInstance.GetMeshLibrary().GetMesh(meshType);
+			// this does the exact same thing in less lines of code despite being computationally slower by a land slide since our Transform component class uses lazy rect
+			// directWrapper.SetConstantBufferTransformData(entityTransform.GetPosition(), entityTransform.GetScale(), entityTransform.GetRotation());
 
-			// Draw the mesh
-			meshObj.Draw(directWrapper);
+			// Set constant buffer alpha and tint color
+			directWrapper.SetConstantBufferAlpha(1.0f); // default 1.0 for now
+			DirectX::XMFLOAT4 tintColor = { 0.0f, 0.0f, 0.0f, 0.0f }; // blank for now
+			directWrapper.SetConstantBufferTintColor(&tintColor);
+
+			// invoke the mesh library to render the selected mesh of this entity
+			Engine::EngineInstance.GetMeshLibrary().GetMesh(meshTypeName)->Draw();
 		}
 	}
 
@@ -118,7 +96,7 @@ namespace Entity
 	{
 		if (hasPhysics && hasTransform)
 		{
-			physics.PhysicsUpdate(transform, deltaTime);
+			// physics.PhysicsUpdate(transform, deltaTime);
 		}
 	}
 

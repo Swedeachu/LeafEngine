@@ -1,64 +1,75 @@
 #include "Mesh.h"
 
+#include "..\EngineInstance.h"
+
 namespace Graphics
 {
 
-	Mesh::Mesh() : vertexBuffer(nullptr), vertexCount(0), stride(sizeof(Vertex)), offset(0)
-	{}
+	Mesh::Mesh(const std::vector<Vertex>& _vertexList)
+	{
+		// copy in the vertex list into this current mesh
+		vertexCount = (unsigned)_vertexList.size();
+		vertexList = new Vertex[vertexCount];
+		memcpy(vertexList, _vertexList.data(), sizeof(Vertex) * vertexCount);
+		// Set up the vertex buffer description struct
+		D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
+		vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		// Set up the subresource data struct
+		D3D11_SUBRESOURCE_DATA subResourceData = { 0 };
+		subResourceData.pSysMem = vertexList;
+		// Create the vertex buffer
+		Engine::EngineInstance.GetDirectWrapper().GetDevice()->CreateBuffer(&vertexBufferDesc, &subResourceData, &vertexBuffer);
+	}
 
 	Mesh::~Mesh()
 	{
 		if (vertexBuffer)
 		{
 			vertexBuffer->Release();
-			vertexBuffer = nullptr;
+		}
+		if (indexBuffer)
+		{
+			indexBuffer->Release();
+		}
+		if (vertexList)
+		{
+			delete vertexList;
+		}
+		if (indices)
+		{
+			delete indices;
 		}
 	}
 
-	void Mesh::Initialize(DirectWrapper& directWrapper, const Vertex* vertices, UINT vertexCount)
+	void Mesh::Draw()
 	{
-		this->vertexCount = vertexCount;
+		// get the needed objects
+		DirectWrapper& directWrapper = Engine::EngineInstance.GetDirectWrapper();
+		ID3D11DeviceContext* deviceContext = directWrapper.GetDeviceContext();
+		// set topology
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		D3D11_BUFFER_DESC vertexBufferDesc = {};
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
+		// TO DO : set pixel shader based on current shader in directWrapper (color or tex pixel shader)
+		// Set the shader
+		deviceContext->PSSetShader(directWrapper.GetPixelShader(), NULL, 0);
 
-		D3D11_SUBRESOURCE_DATA vertexData = {};
-		vertexData.pSysMem = vertices;
+		// If there is a texture, set the shader resource (texture object not implemented yet)
+		//if (directWrapper.GetShaderMode() == SM_TEXTURE && texture)
+		//		deviceContext->PSSetShaderResources(0, 1, &(texture->texResourceView));
+		//else
+		//{
+		ID3D11ShaderResourceView* nullSRV = { nullptr };
+		deviceContext->PSSetShaderResources(0, 1, &nullSRV);
+		//}
 
-		HRESULT hr = directWrapper.GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
-		if (FAILED(hr))
-		{
-			throw std::runtime_error("Failed to create vertex buffer. HRESULT: " + std::to_string(hr));
-		}
+		// set vertex buffers
+		deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		// update constant buffer data
+		directWrapper.UpdateConstantBuffer();
+		// draw the mesh
+		deviceContext->Draw(vertexCount, 0);
 	}
-
-	void Mesh::Draw(DirectWrapper& directWrapper)
-	{
-		directWrapper.GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		directWrapper.GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		directWrapper.GetDeviceContext()->Draw(vertexCount, 0);
-	}
-
-	Mesh Mesh::CreateQuad(DirectWrapper& directWrapper, const DirectX::XMFLOAT2& size)
-	{
-		Vertex vertices[] =
-		{
-			// Positions     // Colors                   // Texture coordinates
-			{ { 0.0f, size.y }, { 1.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // Top-left
-			{ { size.x, size.y }, { 0.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // Top-right
-			{ { size.x, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } }, // Bottom-right
-			{ { 0.0f, size.y }, { 1.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // Top-left
-			{ { size.x, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } }, // Bottom-right
-			{ { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }  // Bottom-left
-		};
-
-		Mesh quad;
-		quad.Initialize(directWrapper, vertices, sizeof(vertices) / sizeof(Vertex));
-		return quad;
-	}
-
 
 } // Graphics

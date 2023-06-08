@@ -35,6 +35,9 @@
     <Filter Include="Source Files\Engine\System\GameScene">
       <UniqueIdentifier>{7d4d98cf-776a-4e39-8674-c85b2a25af79}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine\Input">
+      <UniqueIdentifier>{fc0fc7b4-72ea-45d8-b505-debcb6a096a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Engine\LeafEngine.cpp">
@@ -91,6 +94,9 @@
     <ClCompile Include="Source\Engine\Graphics\Camera.cpp">
       <Filter>Source Files\Engine\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Input\InputHandler.cpp">
+      <Filter>Source Files\Engine\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Game\Scenes\Sandbox.h">
@@ -144,12 +150,18 @@
     <ClInclude Include="Source\Engine\Graphics\Camera.h">
       <Filter>Source Files\Engine\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Input\InputHandler.h">
+      <Filter>Source Files\Engine\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Source\Shaders\VertexShader.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Source\Shaders\PixelShaderTex.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

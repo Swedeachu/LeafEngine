@@ -3,14 +3,14 @@
 
 #include "Mesh.h"
 #include <map>
+#include <string>
 
 namespace Graphics
 {
 
-	enum MeshType { QuadMesh };
-
 	class MeshLibrary
 	{
+
 	public:
 
 		MeshLibrary();
@@ -19,11 +19,21 @@ namespace Graphics
 		// sets all the meshes in our mesh map
 		void InitMeshLibrary();
 
-		const Mesh& GetMesh(MeshType type) const;
+		void CreateMesh(const std::string& meshName, const std::vector<Vertex>& vertexList);
+
+		// create a quad mesh
+		void CreateQuad(const std::string& meshName, float xHalfSize, float yHalfSize, float uSize, float vSize);
+
+		// get a mesh by name from the internal mesh map, if not found QuadMesh is returned by default
+		Mesh* GetMesh(const std::string& meshName);
 
 	private:
 
-		std::map<MeshType, Mesh> meshMap;
+		// map of meshes, each one has a name
+		std::map<std::string, Mesh*> meshMap;
+
+		// adds a mesh with a name to the mesh map
+		void MeshMapAdd(const std::string& meshName, Mesh* mesh);
 
 	};
 

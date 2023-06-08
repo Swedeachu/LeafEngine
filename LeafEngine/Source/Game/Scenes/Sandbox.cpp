@@ -20,15 +20,16 @@ namespace Scenes
 
 		// make a pointer to the test entity to dynamically allocate it
 		Entity::Entity* testEntity = new Entity::Entity();
-		Component::Transform transform(LeafMath::Vector2D(150, 150), 0, LeafMath::Vector2D(32, 32));
+		Component::Transform transform(LeafMath::Vector2D(5, 5), 0, LeafMath::Vector2D(1, 1));
 		testEntity->SetTransform(transform);
 		Component::Physics physics(LeafMath::Vector2D(0, 0), LeafMath::Vector2D(0, 0), 0);
 		testEntity->SetPhysics(physics);
 
 		Engine::EngineInstance.GetGameSceneSystem().AddEntityToCurrentScene(*testEntity);
 
-		// Modify the camera's position
-		Engine::EngineInstance.GetCamera().SetPosition(150, 150);
+		// Modify the camera's position and zoom
+		Engine::EngineInstance.GetCamera().SetPosition(0, 0);
+		// Engine::EngineInstance.GetCamera().SetZoom(2.0f);
 	}
 
 	void Sandbox::Exit()
@@ -38,12 +39,15 @@ namespace Scenes
 
 	void Sandbox::Update(float deltaTime)
 	{
-		std::cout << "updating sandbox scene with dt " << deltaTime << std::endl;
+		if (Engine::EngineInstance.InputKeyDown('W'))
+		{
+			std::cout << "pressed w" << std::endl;
+		}
 	}
 
 	void Sandbox::Render()
 	{
-		std::cout << "rendering sandbox scene" << std::endl;
+		// std::cout << "rendering sandbox scene" << std::endl;
 	}
 
 } // Scenes

@@ -19,7 +19,7 @@ namespace Entity
 		Transform transform;
 		Physics physics;
 
-		Graphics::MeshType meshType;
+		std::string meshTypeName;
 
 		bool hasTransform;
 		bool hasPhysics;
@@ -29,7 +29,7 @@ namespace Entity
 		// Constructor
 		Entity();
 
-		Entity(const Transform& newTransform, const Physics& newPhysics, Graphics::MeshType meshType);
+		Entity(const Transform& newTransform, const Physics& newPhysics, std::string meshTypeName);
 
 		// Destructor
 		~Entity();
@@ -47,10 +47,10 @@ namespace Entity
 		void SetPhysics(const Physics& newPhysics);
 
 		// Get the mesh type
-		Graphics::MeshType GetMeshType() const;
+		std::string GetMeshType() const;
 
 		// Set the mesh type
-		void SetMeshType(Graphics::MeshType newMeshType);
+		void SetMeshType(std::string newMeshType);
 
 		// Render the entity
 		void EntityRender();

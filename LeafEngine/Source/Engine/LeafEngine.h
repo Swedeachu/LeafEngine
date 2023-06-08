@@ -6,6 +6,7 @@
 #include "Graphics/MeshLibrary.h"
 #include "Graphics/Camera.h"
 #include "System/GameScene/GameSceneSystem.h"
+#include "Input/InputHandler.h"
 
 namespace Engine
 {
@@ -27,6 +28,14 @@ namespace Engine
 		// run the engine
 		int Run();
 
+		// input handling (wrapper functions over input handler, it's just easier this way)
+		bool InputKeyDown(char key);
+		bool InputKeyTriggered(char key);
+		bool InputKeyReleased(char key);
+		const LeafMath::Vector2D& GetMousePosition() const;
+		const LeafMath::Vector2D& GetMousePositionDelta() const;
+		void ShowMouseCursor(bool show);
+
 		// Getter and Setter for frame rate
 		int GetFrameRate() const;
 		void SetFrameRate(const int fps);
@@ -46,6 +55,8 @@ namespace Engine
 
 		// Get the window handle for the engine's instance
 		HWND GetEngineWindowHandle() const;
+
+		bool IsActiveWindow() const;
 
 		// Getter for the window title
 		const std::wstring& GetWindowTitle() const;
@@ -78,9 +89,13 @@ namespace Engine
 		Graphics::MeshLibrary meshLibrary;
 		Graphics::Camera camera;
 		GameSystem::GameSceneSystem gameSceneSystem;
+		Input::InputHandler inputHandler;
 
 		// rendering/frame update
 		void RenderFrame();
+
+		// flag for if window is being resized or not
+		bool resizing;
 
 	};
 
